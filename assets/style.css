@@ -1,0 +1,218 @@
+/* Shared stylesheet for java-learning lessons and reference docs. Tufte-ish: quiet, readable, print-friendly. */
+
+:root {
+  --ink: #e8e6e1;
+  --paper: #1c1c1c;
+  --muted: #9a9690;
+  --rule: #3a3a38;
+  --accent: #e08a6b;
+  --accent-soft: #33241f;
+  --code-bg: #262624;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --mono: "SF Mono", "Menlo", "Consolas", monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem;
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+h1, h2, h3 {
+  font-family: var(--serif);
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 1.9rem;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 1rem;
+  margin-top: 0;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.35rem;
+  margin-top: 2.5rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.2rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  margin-top: 1.8rem;
+}
+
+p { margin: 1rem 0; }
+
+code, pre {
+  font-family: var(--mono);
+  font-size: 0.88em;
+}
+
+code {
+  background: var(--code-bg);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+pre {
+  background: var(--code-bg);
+  padding: 1rem 1.2rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  border-left: 3px solid var(--accent);
+}
+
+pre code { background: none; padding: 0; }
+
+.bridge {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  padding: 0.8rem 1.2rem;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+.bridge::before {
+  content: "Quarkus 다리";
+  display: block;
+  font-weight: 600;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+}
+
+.callout {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  margin: 1.5rem 0;
+  background: #222220;
+}
+
+.mission-tie {
+  border-left: 3px solid var(--ink);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #cfccc6;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.2rem 0;
+  font-size: 0.92rem;
+}
+
+th, td {
+  border: 1px solid var(--rule);
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+}
+
+th { background: var(--code-bg); }
+
+a { color: var(--accent); }
+
+.quiz {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1.2rem;
+  margin: 1.5rem 0;
+  background: #201f1d;
+}
+
+.quiz-q {
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.quiz input[type="text"] {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  width: 100%;
+  max-width: 300px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.quiz button {
+  font-family: var(--serif);
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.quiz button:hover { background: var(--accent); }
+
+.quiz-feedback {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  min-height: 1.2em;
+}
+
+.quiz-feedback.correct { color: #6fbf73; }
+.quiz-feedback.wrong { color: var(--accent); }
+
+.nav-links {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.ask-agent {
+  margin-top: 2.5rem;
+  padding: 1rem 1.2rem;
+  background: var(--code-bg);
+  border-radius: 6px;
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+.source {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media print {
+  :root {
+    --ink: #1a1a1a;
+    --paper: #fdfdfb;
+    --muted: #6b6b6b;
+    --rule: #d8d5cd;
+    --accent-soft: #f4ece8;
+    --code-bg: #f4f2ee;
+  }
+  body { max-width: 100%; }
+  .quiz button { display: none; }
+  .callout { background: #fafaf7; }
+  .quiz { background: #fff; }
+}
