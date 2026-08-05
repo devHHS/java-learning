@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0002 control flow</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>control flow</h1>
+<p class="subtitle">레슨 0002 · 문법 기초 큐 2/11 · 복습 위주 · invoice-app 상태 처리와 직결</p>
+
+<div class="mission-tie">
+if/for/while은 이미 Quarkus에서 매일 썼으니 빠르게 넘어간다. 이 레슨의 진짜 목적은 <strong>classic switch의 fallthrough 함정</strong>과, invoice-app에서 status(초안/발송/결제완료 등)를 다룰 때 쓸 <strong>Java 14+ switch expression</strong>이다. 이건 Quarkus 경험만으로는 안 잡히는 부분이다.
+</div>
+
+<h2>1. if / for / while — 빠른 복습</h2>
+<p>문법은 대부분 언어와 동일하다. 확인만 하고 넘어간다.</p>
+<pre><code>if (quantity > 0) {
+    // ...
+} else if (quantity == 0) {
+    // ...
+} else {
+    // ...
+}
+
+for (int i = 0; i < items.size(); i++) {
+    // 인덱스가 필요할 때
+}
+
+for (Item item : items) {
+    // enhanced for — 인덱스 필요 없을 때, invoice-app에서 대부분 이 형태
+}
+
+while (hasNext) {
+    // 조건이 유지되는 동안
+}</code></pre>
+
+<div class="bridge">
+Quarkus/Java에서 이미 매일 쓰던 문법 그대로다. 다른 게 있다면 TypeScript의 <code>for...of</code> ↔ Java의 enhanced for가 거의 1:1 대응한다는 것 정도.
+</div>
+
+<h2>2. classic switch — fallthrough 함정</h2>
+<p>
+Java의 전통적 <code>switch</code>는 <code>break</code>를 안 쓰면 다음 case로 <strong>흘러 내려간다(fallthrough)</strong>. 이건 의도한 동작이 아니라 실수로 버그를 만드는 가장 흔한 원인 중 하나다.
+</p>
+<pre><code>String status = "SENT";
+switch (status) {
+    case "DRAFT":
+        System.out.println("초안");
+        // break 없음!
+    case "SENT":
+        System.out.println("발송됨"); // 여기서 시작
+        // break 없음!
+    case "PAID":
+        System.out.println("결제완료"); // 여기까지 같이 출력됨 — 의도한 게 아니면 버그
+        break;
+    default:
+        System.out.println("알 수 없음");
+}</code></pre>
+<p>
+위 코드는 <code>status</code>가 "SENT"일 때 "발송됨"과 "결제완료"를 둘 다 출력한다. 각 case가 독립적으로 동작하길 원하면 <strong>매 case마다 break를 빠뜨리지 않아야</strong> 한다.
+</p>
+
+<p class="source">출처: <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/switch.html" target="_blank">Oracle Java Tutorials — The switch Statement</a></p>
+
+<h2>3. switch expression (Java 14+) — fallthrough 없음</h2>
+<p>
+최신 Java는 <code>-&gt;</code> 화살표 문법의 switch expression을 지원한다. 이건 값을 <strong>반환</strong>하고, case 간 fallthrough가 <strong>구조적으로 불가능</strong>하다 — 실수의 여지를 문법 자체가 없애버린 것.
+</p>
+<pre><code>String label = switch (status) {
+    case "DRAFT" -> "초안";
+    case "SENT" -> "발송됨";
+    case "PAID" -> "결제완료";
+    default -> "알 수 없음";
+};</code></pre>
+<p>
+여러 줄이 필요하면 <code>yield</code>로 값을 반환한다.
+</p>
+<pre><code>int priorityScore = switch (status) {
+    case "DRAFT" -> 0;
+    case "SENT" -> {
+        System.out.println("독촉 대상 확인 필요");
+        yield 5;
+    }
+    case "PAID" -> 10;
+    default -> -1;
+};</code></pre>
+
+<div class="callout">
+<strong>기억할 것:</strong> classic switch는 <em>statement</em>(실행만 함, break로 제어), switch expression은 <em>expression</em>(값을 만들어 돌려줌, fallthrough 없음). invoice-app에서 status에 따라 값을 정하는 로직은 switch expression을 쓴다.
+</div>
+
+<h2>4. invoice-app에 바로 적용</h2>
+<p>
+인보이스 status(<code>DRAFT</code>, <code>SENT</code>, <code>PAID</code>, <code>OVERDUE</code>)에 따라 화면에 보여줄 라벨이나 색상을 정하는 로직은 switch expression으로 짜면 fallthrough 버그 걱정 없이 깔끔하게 나온다. line item 목록을 순회하며 합계를 낼 때는 enhanced for가 기본이다.
+</p>
+
+<h2>퀴즈</h2>
+
+<div class="quiz" data-answer="break">
+<p class="quiz-q">Q1. classic switch에서 fallthrough를 막으려면 각 case 끝에 무엇을 써야 하는가? (영어 키워드)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="expression">
+<p class="quiz-q">Q2. 화살표(<code>-&gt;</code>) 문법의 switch는 값을 반환하기 때문에 statement가 아니라 무엇이라고 부르는가? (영어 한 단어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="yield">
+<p class="quiz-q">Q3. switch expression의 case 블록이 여러 줄일 때, 값을 반환하려면 어떤 키워드를 쓰는가?</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="ask-agent">
+classic switch와 switch expression 중 뭘 언제 써야 할지 헷갈리면 바로 물어보세요. 실무에서는 값을 만들어야 하면 expression, 그냥 실행만 하면 statement — 이 기준으로 대부분 해결됩니다.
+</div>
+
+<div class="nav-links">
+이전: <a href="0001-variables-types-casting.html">variables, types, type casting</a><br>
+다음: class와 object, constructor — 큐 3/11<br>
+참고 문서: <a href="../reference/java-control-flow-cheatsheet.html">Control Flow Cheatsheet</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Control Flow Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Control Flow Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0002-control-flow.html">0002</a>에서 압축</p>
+
+<h2>기본 형태</h2>
+<pre><code>if (cond) { ... } else if (cond2) { ... } else { ... }
+
+for (int i = 0; i < n; i++) { ... }       // 인덱스 필요할 때
+for (Item item : items) { ... }           // enhanced for, 대부분 이걸 씀
+
+while (cond) { ... }
+do { ... } while (cond);                  // 최소 1회 실행 보장</code></pre>
+
+<h2>classic switch — fallthrough 있음</h2>
+<pre><code>switch (status) {
+    case "DRAFT":
+        // ...
+        break;   // 빠뜨리면 다음 case로 흘러 내려감
+    default:
+        // ...
+}</code></pre>
+<p><strong>statement</strong>다 — 값을 반환하지 않고 실행만 한다.</p>
+
+<h2>switch expression (Java 14+) — fallthrough 없음</h2>
+<pre><code>String label = switch (status) {
+    case "DRAFT" -> "초안";
+    case "SENT" -> "발송됨";
+    default -> "알 수 없음";
+};
+
+int score = switch (status) {
+    case "SENT" -> {
+        // 여러 줄 로직
+        yield 5;
+    }
+    default -> 0;
+};</code></pre>
+<p><strong>expression</strong>이다 — 값을 만들어 돌려준다. case 간 fallthrough가 구조적으로 불가능.</p>
+
+<h2>선택 기준</h2>
+<table>
+<tr><th>상황</th><th>선택</th></tr>
+<tr><td>값을 만들어야 함 (라벨, 점수 등)</td><td>switch expression</td></tr>
+<tr><td>그냥 실행만 하면 됨 (로깅, 부수효과)</td><td>classic switch 또는 if</td></tr>
+</table>
+
+<p class="source">출처: <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/flow.html" target="_blank">Oracle Java Tutorials — Control Flow Statements</a> / <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/switch.html" target="_blank">The switch Statement</a></p>
+
+<div class="nav-links">
+<a href="../lessons/0002-control-flow.html">← 레슨 0002로 돌아가기</a>
+</div>
+
+</body>
+</html>

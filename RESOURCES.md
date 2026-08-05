@@ -6,6 +6,8 @@
 
 - [Oracle Java Tutorials — Primitive Data Types](https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html) — 공식 문서. variable, primitive type 8종의 근거.
 - [Oracle Java Tutorials — Summary of Variables](https://docs.oracle.com/javase/tutorial/java/nutsandbolts/variablesummary.html) — variable 선언 정리.
+- [Oracle Java Tutorials — Control Flow Statements](https://docs.oracle.com/javase/tutorial/java/nutsandbolts/flow.html) — if/for/while 공식 정리.
+- [Oracle Java Tutorials — The switch Statement](https://docs.oracle.com/javase/tutorial/java/nutsandbolts/switch.html) — classic switch와 fallthrough 근거.
 
 ## 아직 필요
 
