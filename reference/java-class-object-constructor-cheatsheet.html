@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Class/Object/Constructor Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Class / Object / Constructor Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0003-class-object-constructor.html">0003</a>에서 압축</p>
+
+<h2>용어</h2>
+<table>
+<tr><th>용어</th><th>뜻</th></tr>
+<tr><td>class</td><td>설계도. field(상태) + method(동작)를 정의</td></tr>
+<tr><td>object</td><td><code>new</code>로 만든 class의 실체. 메모리에 존재</td></tr>
+<tr><td>field</td><td>class 안에 선언된 변수. object의 상태</td></tr>
+<tr><td>constructor</td><td>class와 이름이 같은 특별한 메서드. <code>new</code> 시점에 실행, 반환 타입 없음</td></tr>
+</table>
+
+<h2>기본 형태</h2>
+<pre><code>public class Invoice {
+    String status;
+    int amountInCents;
+
+    public Invoice(String status, int amountInCents) {
+        this.status = status;           // this.필드 = object의 field
+        this.amountInCents = amountInCents;
+    }
+}
+
+Invoice inv = new Invoice("DRAFT", 15000);</code></pre>
+
+<h2>this</h2>
+<p>parameter 이름과 field 이름이 같을 때만 필요. <code>this.x</code> = field, <code>x</code> = local parameter.</p>
+
+<h2>default constructor</h2>
+<ul>
+<li>constructor를 하나도 안 만들면 컴파일러가 인자 없는 constructor를 자동 생성.</li>
+<li>constructor를 하나라도 직접 만들면 default constructor는 <strong>더 이상 자동 생성되지 않음</strong>.</li>
+</ul>
+
+<h2>constructor에서 invariant 강제하기</h2>
+<pre><code>public Money(int amountInCents, String currency) {
+    if (amountInCents &lt; 0) {
+        throw new IllegalArgumentException("amount must not be negative");
+    }
+    this.amountInCents = amountInCents;
+    this.currency = currency;
+}</code></pre>
+<p>잘못된 상태의 object가 애초에 생성되지 못하게 막는 것 — validation의 가장 원초적인 형태.</p>
+
+<h2>Quarkus/CDI 다리</h2>
+<p><code>@ApplicationScoped</code> bean을 프록시로 감싸려면 CDI는 인자 없는 constructor가 필요하다. <code>@Inject</code> constructor만 만들고 no-arg를 빠뜨리면 배포 시점 에러.</p>
+
+<h2>출처</h2>
+<ul>
+<li><a href="https://docs.oracle.com/javase/tutorial/java/javaOO/classes.html" target="_blank">Oracle Java Tutorials — Classes</a></li>
+<li><a href="https://docs.oracle.com/javase/tutorial/java/javaOO/objectcreation.html" target="_blank">Oracle Java Tutorials — Creating Objects</a></li>
+</ul>
+
+</body>
+</html>
