@@ -1,7 +1,8 @@
 public class Money {
 
-    String currency;
-    int amountInCents;
+
+    private String currency;
+    private int amountInCents;
 
     public Money() {}
 
@@ -22,16 +23,24 @@ public class Money {
         }
     }
 
+    public String getCurrency() {
+        return currency;
+    }
+
+    public int getAmountInCents() {
+        return amountInCents;
+    }
     public static void main(String[] args) {
 
         Money money1 = new Money("USD", 1);
         Money money2 = new Money("EUR", 3);
         Money money3 = new Money("EUR", 4);
-        Money money4 = new Money("EUR", -10);
+        //Money money4 = new Money("EUR", -10);
 
-        System.out.print(money2.add(money3).amountInCents);
-        System.out.print(money2.add(money4).amountInCents);
-        System.out.print((money2.add(money1)));
+        System.out.print(money2.add(money3).getAmountInCents());
+        //System.out.print(money2.add(money4).getAmountInCents());
+        //System.out.print((money2.add(money1)));
+
     }
 
 }

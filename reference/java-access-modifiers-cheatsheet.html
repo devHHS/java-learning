@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Access Modifiers Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Access Modifiers Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0005-access-modifiers.html">0005</a>에서 압축</p>
+
+<h2>네 가지 레벨</h2>
+<table>
+<tr><th>modifier</th><th>같은 class</th><th>같은 package</th><th>subclass</th><th>어디서나</th></tr>
+<tr><td><code>private</code></td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>(없음, package-private)</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td><code>protected</code></td><td>✓</td><td>✓</td><td>✓</td><td>✗</td></tr>
+<tr><td><code>public</code></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+</table>
+
+<h2>원칙</h2>
+<p>특별한 이유가 없으면 <code>private</code>. 그 member에 필요한 가장 제한적인 레벨을 선택.</p>
+
+<h2>패턴</h2>
+<pre><code>public class Money {
+    private String currency;      // 외부에서 직접 못 건드림
+    private int amountInCents;
+
+    public Money(String currency, int amountInCents) {
+        if (amountInCents &lt; 0) throw new IllegalArgumentException();
+        this.currency = currency;
+        this.amountInCents = amountInCents;
+    }
+
+    public int getAmountInCents() { return amountInCents; }   // getter — 읽기만
+    public String getCurrency() { return currency; }
+    // setter는 일부러 안 만듦 — immutable 의도
+}</code></pre>
+
+<h2>왜 field를 열어두면 안 되는가</h2>
+<p>constructor의 invariant(fail fast)는 field가 <code>private</code>일 때만 계속 유지된다. field가 열려있으면 <code>obj.field = 잘못된값;</code>으로 검증을 우회할 수 있다.</p>
+
+<h2>Quarkus vs Spring 다리</h2>
+<p>Panache entity는 보통 field <code>public</code> (active record). Spring Data JPA는 거의 항상 <code>private</code> + getter/setter. Spring Boot 기본값 = <code>private</code>.</p>
+
+<h2>출처</h2>
+<p><a href="https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html" target="_blank">Oracle Java Tutorials — Controlling Access to Members of a Class</a></p>
+
+</body>
+</html>

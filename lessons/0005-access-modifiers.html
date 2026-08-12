@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0005 access modifiers</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>access modifiers</h1>
+<p class="subtitle">레슨 0005 · 문법 기초 큐 4/11 · 네가 이미 쓴 코드에서 시작한다</p>
+
+<div class="mission-tie">
+`practice/0003-class-object-constructor/Money.java`의 field를 다시 봐 — <code>String currency;</code>, <code>int amountInCents;</code>. 앞에 아무 키워드도 없다. 반면 `practice/0004-review-class-object-constructor/PageRequest.java`에서는 <code>private int pageNumber;</code>처럼 <code>private</code>를 직접 붙였다. 왜 둘이 다른지, 그리고 그 차이가 왜 중요한지가 이 레슨의 전부다.
+</div>
+
+<h2>1. 네 가지 레벨</h2>
+<table>
+<tr><th>modifier</th><th>같은 class</th><th>같은 package</th><th>subclass</th><th>어디서나</th></tr>
+<tr><td><code>private</code></td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>(없음, package-private)</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td><code>protected</code></td><td>✓</td><td>✓</td><td>✓</td><td>✗</td></tr>
+<tr><td><code>public</code></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+</table>
+<p>
+Oracle 튜토리얼의 원칙은 명확하다: <strong>"특별한 이유가 없으면 <code>private</code>를 써라. 그 member에 맞는 가장 제한적인 접근 레벨을 선택하라."</strong>
+</p>
+
+<p class="source">출처: <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html" target="_blank">Oracle Java Tutorials — Controlling Access to Members of a Class</a></p>
+
+<h2>2. Money의 field가 private이어야 하는 이유</h2>
+<p>
+0003에서 <code>Money</code>의 constructor는 음수 금액이면 예외를 던지도록 짜여 있다 — fail fast였다. 그런데 field에 아무 modifier도 없으면(package-private), <strong>같은 package 안의 다른 코드가 constructor를 거치지 않고 field에 직접 접근해서 값을 바꿀 수 있다</strong>.
+</p>
+<pre><code>Money money = new Money("USD", 100); // constructor가 검증함 — 안전
+money.amountInCents = -999;          // field가 열려있으면 검증 없이 그냥 덮어써짐!</code></pre>
+<p>
+constructor에서 아무리 invariant를 지켜도, field가 열려있으면 <strong>그 뒤에 아무 데서나 규칙을 깨고 들어올 수 있다</strong>. <code>private</code>로 막아야 "이 object는 항상 유효한 상태"라는 보장이 constructor 이후에도 계속 유지된다.
+</p>
+
+<h2>3. 그럼 값은 어떻게 꺼내나 — getter</h2>
+<p>
+field를 <code>private</code>로 막으면, 외부에서 값을 읽을 방법이 없어진다. 그래서 읽기 전용 접근을 <code>public</code> method로 열어준다 — 이게 <strong>getter</strong>다.
+</p>
+<pre><code>public class Money {
+    private String currency;
+    private int amountInCents;
+
+    // constructor는 기존과 동일...
+
+    public int getAmountInCents() {
+        return amountInCents;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+}</code></pre>
+<p>
+값을 바꾸는 <code>setAmountInCents(...)</code> 같은 setter는 <strong>일부러 안 만든다</strong> — <code>Money</code>는 한 번 만들어지면 안 변하는 게(immutable) 의도다. 0004의 <code>PageRequest.nextPage()</code>가 <code>this</code>를 바꾸지 않고 새 object를 반환했던 것과 같은 이유다.
+</p>
+
+<div class="bridge">
+Quarkus의 Panache entity는 보통 field를 <code>public</code>으로 그냥 열어둔다 (active record 패턴 — 편의가 우선). 반면 Spring Data JPA 스타일은 거의 항상 field를 <code>private</code>로 막고 getter/setter(또는 Lombok)로 접근한다. 같은 ORM 문제를 다른 철학으로 푸는 것 — Spring Boot로 넘어가면 <code>private</code> + getter가 기본값이라고 생각하면 된다.
+</div>
+
+<h2>4. protected와 package-private은 지금은 가볍게</h2>
+<p>
+<code>protected</code>는 inheritance(다음 큐 항목)에서 subclass가 parent의 member에 접근할 때 쓴다 — 지금은 존재만 알아두면 된다. package-private(modifier 없음)은 "같은 package 안에서만 협업하는 클래스들" 사이에 쓰는데, Spring Boot 프로젝트에서는 패키지 구조를 세밀하게 나누기 전까지 자주 등장하진 않는다.
+</p>
+
+<h2>5. invoice-app에 바로 적용</h2>
+<p>
+<code>Invoice</code>, <code>LineItem</code> 같은 class의 field는 전부 <code>private</code>로 시작하고, 꼭 필요한 것만 getter로 연다. <code>status</code>를 바꾸는 method가 필요하면 <code>setStatus(String status)</code>를 무작정 여는 게 아니라, "DRAFT에서 PAID로 못 건너뛴다" 같은 규칙을 그 method 안에서 검증하게 만든다 — constructor에서 했던 fail fast를 method에도 똑같이 적용하는 것이다.
+</p>
+
+<h2>Hands-on: Money를 private로 고치기</h2>
+<p>
+<code>practice/0003-class-object-constructor/Money.java</code>를 직접 연다. 새 파일을 만들지 않고 <strong>기존 파일을 고친다</strong>.
+</p>
+<ul>
+<li>field 두 개(<code>currency</code>, <code>amountInCents</code>) 앞에 <code>private</code>를 붙인다.</li>
+<li><code>getCurrency()</code>, <code>getAmountInCents()</code> getter 두 개를 추가한다.</li>
+<li><code>main</code>에서 <code>System.out.print(money2.add(money3).amountInCents)</code>처럼 field에 직접 접근하던 코드를 <strong>getter를 쓰도록</strong> 바꾼다 — <code>getAmountInCents()</code>.</li>
+<li>확인: <code>main</code> 어딘가에 <code>money1.amountInCents = -999;</code> 같은 줄을 <strong>일부러</strong> 추가해보고, 컴파일이 안 되는 걸 직접 확인한다 (에러 메시지 읽고 나서 그 줄은 지운다). <code>private</code>가 실제로 막아준다는 걸 눈으로 보는 게 목적이다.</li>
+</ul>
+
+<h2>퀴즈</h2>
+
+<div class="quiz" data-answer="private">
+<p class="quiz-q">Q1. 같은 class 안에서만 접근 가능한, 가장 제한적인 access modifier는?</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="getter">
+<p class="quiz-q">Q2. private field의 값을 외부에서 읽을 수 있게 열어주는, 값을 반환만 하는 public method를 뭐라 부르는가? (영어 한 단어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="package">
+<p class="quiz-q">Q3. modifier를 아무것도 안 쓰면(default), 접근 가능한 범위는 같은 무엇인가? (영어 한 단어, "-private" 앞부분만)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="ask-agent">
+protected를 언제 실제로 쓰는지는 inheritance 레슨에서 예제와 함께 다시 나온다. 지금 애매하면 미뤄도 되고, 그래도 궁금하면 바로 물어봐.
+</div>
+
+<div class="nav-links">
+이전: <a href="0003-class-object-constructor.html">class, object, constructor</a> · <a href="0004-review-class-object-constructor.html">복습</a><br>
+다음: static vs instance — 큐 5/11<br>
+참고 문서: <a href="../reference/java-access-modifiers-cheatsheet.html">Access Modifiers Cheatsheet</a>
+</div>
+
+</body>
+</html>

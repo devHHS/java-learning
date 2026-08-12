@@ -10,6 +10,7 @@
 - [Oracle Java Tutorials — The switch Statement](https://docs.oracle.com/javase/tutorial/java/nutsandbolts/switch.html) — classic switch와 fallthrough 근거.
 - [Oracle Java Tutorials — Classes](https://docs.oracle.com/javase/tutorial/java/javaOO/classes.html) — class, field, method, constructor 정의.
 - [Oracle Java Tutorials — Creating Objects](https://docs.oracle.com/javase/tutorial/java/javaOO/objectcreation.html) — new, default constructor 근거.
+- [Oracle Java Tutorials — Controlling Access to Members of a Class](https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html) — private/package-private/protected/public 4단계, "가장 제한적인 레벨을 써라" 원칙.
 
 ## 아직 필요
 
