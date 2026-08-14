@@ -11,6 +11,7 @@
 - [Oracle Java Tutorials — Classes](https://docs.oracle.com/javase/tutorial/java/javaOO/classes.html) — class, field, method, constructor 정의.
 - [Oracle Java Tutorials — Creating Objects](https://docs.oracle.com/javase/tutorial/java/javaOO/objectcreation.html) — new, default constructor 근거.
 - [Oracle Java Tutorials — Controlling Access to Members of a Class](https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html) — private/package-private/protected/public 4단계, "가장 제한적인 레벨을 써라" 원칙.
+- [Oracle Java Tutorials — Understanding Class Members](https://docs.oracle.com/javase/tutorial/java/javaOO/classvars.html) — static field/method 정의, static method가 instance member에 접근 못 하는 이유, static final 상수.
 
 ## 아직 필요
 

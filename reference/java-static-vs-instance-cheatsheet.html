@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Static vs Instance Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Static vs Instance Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0006-static-vs-instance.html">0006</a>에서 압축</p>
+
+<h2>핵심 구분</h2>
+<table>
+<tr><th></th><th>instance member</th><th>static member</th></tr>
+<tr><td>속한 곳</td><td>object (각자 따로)</td><td>class (전체가 공유, 하나뿐)</td></tr>
+<tr><td>부르는 법</td><td><code>obj.field</code> / <code>obj.method()</code></td><td><code>ClassName.field</code> / <code>ClassName.method()</code></td></tr>
+<tr><td><code>this</code> 사용</td><td>가능</td><td>불가능 (가리킬 instance 없음)</td></tr>
+</table>
+
+<h2>패턴</h2>
+<pre><code>public class Ticket {
+    private static int nextId = 1;   // class가 공유하는 카운터
+
+    private int id;                  // object마다 따로
+    private String subject;
+
+    public Ticket(String subject) {
+        this.id = nextId;
+        nextId++;
+        this.subject = subject;
+    }
+
+    public static int getCreatedCount() { return nextId - 1; }
+}</code></pre>
+
+<h2>static + final = 상수</h2>
+<p>재대입 불가능. 예: <code>Math.PI</code>. 대입 시도하면 컴파일 에러.</p>
+
+<h2>왜 main은 static인가</h2>
+<p>JVM이 프로그램을 시작할 때 아직 만들어진 object가 없다. object 없이 부를 진입점이 필요해서 static이어야 한다.</p>
+
+<h2>Quarkus vs Spring 다리</h2>
+<p>Panache active record는 <code>Person.findAll()</code>처럼 static method로 쿼리. Spring Data JPA는 repository를 instance로 주입받아 <code>repository.findAll()</code>. Spring Boot 기본값 = 주입받은 instance로 호출.</p>
+
+<h2>출처</h2>
+<p><a href="https://docs.oracle.com/javase/tutorial/java/javaOO/classvars.html" target="_blank">Oracle Java Tutorials — Understanding Class Members</a></p>
+
+</body>
+</html>
