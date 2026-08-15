@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0007 inheritance and polymorphism</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>inheritance와 polymorphism</h1>
+<p class="subtitle">레슨 0007 · 문법 기초 큐 6/11 · 이미 던지고 있던 예외에서 시작한다</p>
+
+<div class="mission-tie">
+<code>Money.java</code> constructor에서 <code>throw new IllegalArgumentException();</code>을 썼었다. 사실 <code>IllegalArgumentException</code>은 <code>RuntimeException</code>을 <strong>상속받은</strong> class고, <code>RuntimeException</code>은 <code>Exception</code>을, <code>Exception</code>은 <code>Throwable</code>을 상속받는다. 지금까지 이름도 몰랐던 inheritance를 이미 매번 쓰고 있었던 것이다.
+</div>
+
+<h2>1. extends — 부모의 것을 물려받는다</h2>
+<p>
+<code>extends</code> 키워드로 한 class가 다른 class의 member를 물려받게 만든다. Java는 <strong>단일 상속</strong>이다 — <code>Object</code>를 빼면 모든 class는 딱 하나의 direct superclass만 가진다.
+</p>
+<pre><code>public class Notification {
+    protected String recipient;
+    public Notification(String recipient) { this.recipient = recipient; }
+    public void send() { System.out.println("일반 알림을 " + recipient + "에게 보냄"); }
+}
+
+public class EmailNotification extends Notification {
+    private String subject;
+    // ...
+}</code></pre>
+<p>
+무엇이 물려지는가: <strong>public/protected member는 그대로 상속</strong>된다. <strong>private member는 상속되지 않는다</strong> — 부모가 public/protected getter를 열어뒀다면 그걸 통해서만 접근 가능하다. <strong>constructor는 상속되지 않는다</strong> — 대신 subclass의 constructor에서 <code>super(...)</code>로 부모 constructor를 직접 불러야 한다.
+</p>
+<p class="source">출처: <a href="https://docs.oracle.com/javase/tutorial/java/IandI/subclasses.html" target="_blank">Oracle Java Tutorials — Overriding and Hiding Methods</a></p>
+
+<h2>2. protected가 여기서 쓰인다 (0005에서 미뤘던 것)</h2>
+<p>
+0005에서 "protected는 inheritance에서 다시 다룬다"고 했던 게 이거다. <code>Notification</code>의 <code>recipient</code>를 <code>private</code>로 막으면 <code>EmailNotification</code>이 아예 접근을 못 한다. <code>public</code>으로 열면 아무 class나 다 건드릴 수 있다. <code>protected</code>는 그 중간 — <strong>"subclass는 접근 가능, 그 외 남은 다 막힘"</strong>이다.
+</p>
+
+<h2>3. super — 부모 constructor 호출</h2>
+<pre><code>public class EmailNotification extends Notification {
+    private String subject;
+
+    public EmailNotification(String recipient, String subject) {
+        super(recipient);       // 부모의 constructor에게 recipient 처리를 넘김
+        this.subject = subject;
+    }
+}</code></pre>
+<p>
+<code>super(recipient)</code>는 반드시 constructor의 <strong>첫 줄</strong>에 와야 한다 — 부모가 먼저 자기 상태를 갖추고 나서, 자식이 자기 것을 추가하는 순서다.
+</p>
+
+<h2>4. overriding — 같은 signature, 다른 동작</h2>
+<p>
+부모에 있는 instance method와 <strong>이름 + 매개변수가 완전히 같은</strong> method를 subclass에서 다시 정의하는 것을 <strong>override</strong>라고 부른다.
+</p>
+<pre><code>public class EmailNotification extends Notification {
+    @Override
+    public void send() {
+        System.out.println("이메일 " + subject + "를 " + recipient + "에게 보냄");
+    }
+}</code></pre>
+<p><code>@Override</code>는 필수는 아니지만, "이건 부모 걸 재정의한 거다"를 컴파일러가 확인해주므로 항상 붙인다 — signature를 잘못 적으면(오타 등) 컴파일 에러로 바로 잡아준다.</p>
+
+<h2>5. polymorphism — 선언 타입이 아니라 실제 타입이 이긴다</h2>
+<p>
+<code>List&lt;Notification&gt;</code>에 <code>Notification</code>, <code>EmailNotification</code>, <code>SmsNotification</code>을 섞어 담고 <code>send()</code>를 부르면, <strong>변수의 선언 타입(<code>Notification</code>)이 아니라 각 object가 실제로 무엇으로 만들어졌는지</strong>에 따라 다른 <code>send()</code>가 실행된다.
+</p>
+<p class="source">
+Oracle 원문: <strong>"The Java virtual machine (JVM) calls the appropriate method for the object that is referred to in each variable. It does not call the method that is defined by the variable's type."</strong> — <a href="https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html" target="_blank">Oracle Java Tutorials — Polymorphism</a>
+</p>
+<p>
+이게 왜 유용한가: <code>for (Notification n : queue) { n.send(); }</code> 한 줄로 모든 종류의 알림을 다 처리할 수 있다. <code>if (n instanceof EmailNotification) ... else if ...</code> 같은 분기를 안 짜도 된다 — polymorphism이 그 분기를 대신 해준다.
+</p>
+
+<div class="bridge">
+<code>Money.java</code>의 <code>throw new IllegalArgumentException()</code>을 나중에 <code>catch (RuntimeException e)</code>로 잡을 수 있는 것도 같은 원리다 — <code>IllegalArgumentException</code>은 <code>RuntimeException</code>이기도 하니까(is-a 관계). exception handling 큐 항목에서 이걸 제대로 다룬다. Spring Boot의 <code>@ControllerAdvice</code>도 이 상속 계층을 이용해서 "이 계열의 예외는 다 여기서 잡는다"는 걸 구현한다.
+</div>
+
+<h2>6. invoice-app에 바로 적용</h2>
+<p>
+결제 수단이 여러 개(카드, 계좌이체, PayPal)라면 <code>PaymentMethod</code> 부모 class를 만들고 각 결제 방식이 <code>extends</code>해서 자기만의 <code>process()</code>를 override하게 만들 수 있다. <code>List&lt;PaymentMethod&gt;</code>로 관리하면 결제 로직을 추가할 때마다 기존 코드를 안 건드리고 새 subclass만 추가하면 된다 — 이 확장성이 inheritance/polymorphism을 쓰는 실질적 이유다.
+</p>
+
+<h2>Hands-on: Notification 계층 완성하기</h2>
+<p>
+<code>practice/0007-inheritance-polymorphism/</code>의 파일 네 개를 연다. <code>Notification.java</code>는 이미 완성돼 있다.
+</p>
+<ul>
+<li><code>EmailNotification.java</code>의 TODO 두 곳: constructor에서 <code>super(recipient)</code> 호출, <code>send()</code> override.</li>
+<li><code>SmsNotification.java</code>도 동일한 패턴으로 TODO 두 곳을 채운다.</li>
+<li><code>NotificationDemo.java</code>는 이미 완성돼 있다 — 그대로 실행해서, <code>Notification</code> 타입 하나로 선언된 <code>queue</code>에서 각기 다른 <code>send()</code>가 실행되는 걸 직접 확인한다.</li>
+</ul>
+
+<h2>퀴즈</h2>
+
+<div class="quiz" data-answer="extends">
+<p class="quiz-q">Q1. 한 class가 다른 class의 member를 물려받게 만드는 키워드는?</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="super">
+<p class="quiz-q">Q2. subclass의 constructor에서 부모의 constructor를 직접 호출할 때 쓰는 키워드는?</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="overriding">
+<p class="quiz-q">Q3. 부모와 signature가 완전히 같은 instance method를 subclass가 재정의하는 것을 뭐라 부르는가? (영어 한 단어, -ing형)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="ask-agent">
+"언제 inheritance 대신 composition(has-a 관계)을 써야 하는가"는 실무에서 자주 부딪히는 판단인데, 다음 큐 항목인 interface와 abstract class를 배운 뒤에 비교하는 게 더 명확하다. 지금 궁금하면 바로 물어봐도 된다.
+</div>
+
+<div class="nav-links">
+이전: <a href="0006-static-vs-instance.html">static vs instance</a><br>
+다음: interface와 abstract class — 큐 7/11<br>
+참고 문서: <a href="../reference/java-inheritance-polymorphism-cheatsheet.html">Inheritance & Polymorphism Cheatsheet</a>
+</div>
+
+</body>
+</html>

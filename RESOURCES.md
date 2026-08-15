@@ -12,6 +12,8 @@
 - [Oracle Java Tutorials — Creating Objects](https://docs.oracle.com/javase/tutorial/java/javaOO/objectcreation.html) — new, default constructor 근거.
 - [Oracle Java Tutorials — Controlling Access to Members of a Class](https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html) — private/package-private/protected/public 4단계, "가장 제한적인 레벨을 써라" 원칙.
 - [Oracle Java Tutorials — Understanding Class Members](https://docs.oracle.com/javase/tutorial/java/javaOO/classvars.html) — static field/method 정의, static method가 instance member에 접근 못 하는 이유, static final 상수.
+- [Oracle Java Tutorials — Overriding and Hiding Methods](https://docs.oracle.com/javase/tutorial/java/IandI/subclasses.html) — extends, 무엇이 상속되는지(public/protected는 됨, private/constructor는 안 됨), super.
+- [Oracle Java Tutorials — Polymorphism](https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html) — virtual method invocation, 선언 타입이 아니라 실제 object 타입의 override된 method가 실행되는 원리.
 
 ## 아직 필요
 

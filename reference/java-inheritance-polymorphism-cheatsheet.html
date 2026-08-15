@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Inheritance & Polymorphism Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Inheritance & Polymorphism Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0007-inheritance-polymorphism.html">0007</a>에서 압축</p>
+
+<h2>물려지는 것 / 안 물려지는 것</h2>
+<table>
+<tr><th>member</th><th>상속 여부</th></tr>
+<tr><td>public / protected</td><td>물려짐</td></tr>
+<tr><td>package-private (같은 package)</td><td>물려짐</td></tr>
+<tr><td>private</td><td>안 물려짐 (public/protected getter로만 접근)</td></tr>
+<tr><td>constructor</td><td>안 물려짐 — <code>super(...)</code>로 직접 호출</td></tr>
+</table>
+
+<h2>패턴</h2>
+<pre><code>public class Notification {
+    protected String recipient;
+    public Notification(String recipient) { this.recipient = recipient; }
+    public void send() { System.out.println("일반 알림"); }
+}
+
+public class EmailNotification extends Notification {
+    private String subject;
+
+    public EmailNotification(String recipient, String subject) {
+        super(recipient);           // 첫 줄에 와야 함
+        this.subject = subject;
+    }
+
+    @Override
+    public void send() {            // signature 동일 = overriding
+        System.out.println("이메일 " + subject);
+    }
+}</code></pre>
+
+<h2>polymorphism</h2>
+<p><code>List&lt;Notification&gt;</code>에 여러 subclass를 섞어 담고 <code>send()</code>를 부르면, <strong>선언 타입이 아니라 실제 object 타입</strong>의 override된 method가 실행된다 (virtual method invocation). <code>instanceof</code> 분기 없이 다형적으로 처리 가능.</p>
+
+<h2>protected의 위치</h2>
+<p>private(같은 class만) &lt; protected(같은 class + subclass) &lt; public(전체). subclass 접근이 필요하면 protected.</p>
+
+<h2>Quarkus/Spring 다리</h2>
+<p><code>IllegalArgumentException extends RuntimeException extends Exception</code> — 이미 써본 예외 클래스도 상속 계층이다. Spring의 <code>@ControllerAdvice</code>도 이 계층을 이용해 예외 계열 단위로 처리한다.</p>
+
+<h2>출처</h2>
+<p>
+<a href="https://docs.oracle.com/javase/tutorial/java/IandI/subclasses.html" target="_blank">Oracle Java Tutorials — Overriding and Hiding Methods</a><br>
+<a href="https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html" target="_blank">Oracle Java Tutorials — Polymorphism</a>
+</p>
+
+</body>
+</html>
