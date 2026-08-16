@@ -14,6 +14,8 @@
 - [Oracle Java Tutorials — Understanding Class Members](https://docs.oracle.com/javase/tutorial/java/javaOO/classvars.html) — static field/method 정의, static method가 instance member에 접근 못 하는 이유, static final 상수.
 - [Oracle Java Tutorials — Overriding and Hiding Methods](https://docs.oracle.com/javase/tutorial/java/IandI/subclasses.html) — extends, 무엇이 상속되는지(public/protected는 됨, private/constructor는 안 됨), super.
 - [Oracle Java Tutorials — Polymorphism](https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html) — virtual method invocation, 선언 타입이 아니라 실제 object 타입의 override된 method가 실행되는 원리.
+- [Oracle Java Tutorials — Interfaces](https://docs.oracle.com/javase/tutorial/java/IandI/createinterface.html) — interface를 "contract"로 정의하는 근거, implements와 instantiate 불가 규칙.
+- [Oracle Java Tutorials — Abstract Methods and Classes](https://docs.oracle.com/javase/tutorial/java/IandI/abstract.html) — abstract class/method 정의, interface와의 field/구현/다중 implements 차이, 언제 뭘 쓰는지 공식 가이드라인.
 
 ## 아직 필요
 

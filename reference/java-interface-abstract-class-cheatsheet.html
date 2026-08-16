@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Interface & Abstract Class Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Interface & Abstract Class Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0008-interface-abstract-class.html">0008</a>에서 압축</p>
+
+<h2>핵심 차이</h2>
+<table>
+<tr><th></th><th>interface</th><th>abstract class</th></tr>
+<tr><td>field</td><td>사실상 상수만 (public static final)</td><td>일반 instance field 가능</td></tr>
+<tr><td>method 구현</td><td>기본적으로 없음 (signature만)</td><td>구현 있는 것 + 없는 것 섞임</td></tr>
+<tr><td>constructor</td><td>없음</td><td>있음</td></tr>
+<tr><td>키워드</td><td><code>implements</code>, 여러 개 가능</td><td><code>extends</code>, 딱 하나만</td></tr>
+<tr><td>instantiate</td><td>불가</td><td>불가</td></tr>
+</table>
+
+<h2>패턴</h2>
+<pre><code>public interface DiscountPolicy {
+    double apply(double amount);          // 몸통 없음
+}
+
+public class PercentageDiscount implements DiscountPolicy {
+    private double percent;
+    @Override
+    public double apply(double amount) {
+        return amount - (amount * percent / 100);
+    }
+}
+
+public abstract class PaymentMethod {
+    protected String accountId;
+    public PaymentMethod(String accountId) { this.accountId = accountId; }
+
+    public boolean validate() { return accountId != null; }   // 몸통 있음 — 공유됨
+    public abstract void process(double amount);               // 몸통 없음 — 강제됨
+}</code></pre>
+
+<h2>고르는 기준 (Oracle 원문 요약)</h2>
+<p><strong>abstract class</strong>: 서로 밀접한 class끼리 코드를 공유해야 할 때, 공통 field/method가 많을 때, public이 아닌 접근 수준이 필요할 때.</p>
+<p><strong>interface</strong>: 서로 관련 없는 class들이 구현할 때, "무엇을 하는지"만 규정하고 싶을 때, 한 class가 여러 계약을 동시에 만족해야 할 때.</p>
+
+<h2>Spring 다리</h2>
+<p><code>JpaRepository</code>가 interface인 이유 — "무엇을 하는지"만 규정하면, Spring이 런타임에 구현체를 대신 만들어줄 수 있다. 구현을 신경 안 써도 되는 게 interface의 핵심 이점.</p>
+
+<h2>출처</h2>
+<p>
+<a href="https://docs.oracle.com/javase/tutorial/java/IandI/createinterface.html" target="_blank">Oracle Java Tutorials — Interfaces</a><br>
+<a href="https://docs.oracle.com/javase/tutorial/java/IandI/abstract.html" target="_blank">Oracle Java Tutorials — Abstract Methods and Classes</a>
+</p>
+
+</body>
+</html>
