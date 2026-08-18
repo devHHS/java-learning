@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0009 collections</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>collections — List, Set, Map</h1>
+<p class="subtitle">레슨 0009 · 문법 기초 큐 8/11 · 0008의 interface가 실제로 이렇게 쓰인다</p>
+
+<div class="mission-tie">
+0008에서 "interface는 계약, 구현은 class"라고 배웠다. <code>List</code>, <code>Set</code>, <code>Map</code>이 바로 그 예시다 — 셋 다 <strong>interface</strong>고, <code>ArrayList</code>/<code>HashSet</code>/<code>HashMap</code>이 그 구현체다. 오늘은 새 개념이 아니라, 이미 아는 개념(interface)이 실무에서 어떤 모습으로 나타나는지 보는 레슨이다.
+</div>
+
+<h2>1. List — 순서 있음, 중복 허용</h2>
+<pre><code>List&lt;String&gt; tags = new ArrayList&lt;&gt;();
+tags.add("food");
+tags.add("food");     // 중복 그대로 허용됨
+tags.get(0);           // index로 접근 — "food"</code></pre>
+<p class="source">
+"An ordered collection... Unlike sets, lists typically allow duplicate elements." — <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html" target="_blank">Oracle Java Platform SE 8 — List</a>
+</p>
+<p>
+선언 타입은 <code>List</code>(interface), 실제로 만드는 건 <code>ArrayList</code>(구현체) — 0008에서 배운 "선언 타입 vs 실제 타입"이 여기서도 그대로 적용된다. <code>&lt;String&gt;</code>은 "이 List에 뭘 담을지" 지정하는 문법인데, 이건 generics 큐 항목에서 제대로 다룬다 — 지금은 <code>&lt;타입&gt;</code> 형태로만 알아두면 된다.
+</p>
+
+<h2>2. Set — 중복 없음, 순서 보장 안 함</h2>
+<pre><code>Set&lt;String&gt; categories = new HashSet&lt;&gt;();
+categories.add("전자제품");
+categories.add("전자제품");   // 이미 있으므로 무시됨
+categories.size();             // 1</code></pre>
+<p class="source">
+"A collection that contains no duplicate elements." — <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html" target="_blank">Oracle Java Platform SE 8 — Set</a>
+</p>
+<p>
+List처럼 <code>get(0)</code>으로 index 접근이 안 된다 — Set은 "이 안에 있는지 없는지"만 중요하지, 순서를 보장하지 않는다.
+</p>
+
+<h2>3. Map — key로 value를 찾음</h2>
+<pre><code>Map&lt;Integer, String&gt; nameById = new HashMap&lt;&gt;();
+nameById.put(1, "김철수");
+nameById.put(2, "이영희");
+nameById.get(1);        // "김철수" — key로 즉시 조회
+nameById.put(1, "김철수2");  // 같은 key면 덮어씀, 중복 key 불가</code></pre>
+<p class="source">
+"An object that maps keys to values. A map cannot contain duplicate keys; each key can map to at most one value." — <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html" target="_blank">Oracle Java Platform SE 8 — Map</a>
+</p>
+<p>
+List에서 특정 id를 가진 요소를 찾으려면 전체를 순회(loop)해야 하지만, Map은 key로 <strong>바로</strong> 찾는다. "id로 조회"가 잦으면 Map을 쓰는 이유다.
+</p>
+
+<h2>4. 언제 뭘 쓰는가</h2>
+<table>
+<tr><th></th><th>List</th><th>Set</th><th>Map</th></tr>
+<tr><td>순서</td><td>보장됨</td><td>보장 안 됨</td><td>보장 안 됨 (HashMap 기준)</td></tr>
+<tr><td>중복</td><td>허용</td><td>불허 (자동 제거)</td><td>key는 불허, value는 허용</td></tr>
+<tr><td>쓰는 이유</td><td>순서대로 쌓인 데이터, index 접근</td><td>중복 제거, "포함 여부"만 필요</td><td>id → object 빠른 조회</td></tr>
+</table>
+
+<div class="bridge">
+Spring Data JPA의 <code>repository.findAll()</code>은 <code>List&lt;Entity&gt;</code>를 반환한다 — DB row 순서를 유지하면서 중복(같은 PK를 가진 row는 없지만) 걱정 없이 쌓아야 하니 List가 맞는 선택이다. 반대로 "이미 처리한 주문 id들"처럼 포함 여부만 중요하면 <code>Set&lt;Long&gt;</code>을, "id로 캐시"가 필요하면 <code>Map&lt;Long, Entity&gt;</code>을 쓴다.
+</div>
+
+<h2>5. invoice-app에 바로 적용</h2>
+<p>
+영수증 하나에 항목이 여러 개면 <code>List&lt;LineItem&gt;</code> — 항목 순서가 중요하고 같은 이름의 항목이 중복될 수도 있다. 영수증에 붙은 태그(예: "출장", "식비")는 <code>Set&lt;String&gt;</code> — 같은 태그를 두 번 붙일 이유가 없다. 영수증 id로 빠르게 찾아야 하는 캐시가 필요하면 <code>Map&lt;Long, Receipt&gt;</code>이 맞다.
+</p>
+
+<h2>Hands-on: Catalog 완성하고 직접 실행해보기</h2>
+<p>
+<code>practice/0009-collections/</code>를 연다. <code>Product.java</code>는 완성돼 있다 (id, name, category, price).
+</p>
+<ul>
+<li><code>Catalog.java</code>의 TODO 두 곳:
+  <ul>
+    <li><code>uniqueCategories(List&lt;Product&gt; products)</code> — 전체 상품에서 <strong>중복 없는</strong> category 목록을 <code>Set&lt;String&gt;</code>으로 반환.</li>
+    <li><code>indexById(List&lt;Product&gt; products)</code> — id로 상품을 바로 찾을 수 있는 <code>Map&lt;Integer, Product&gt;</code>를 만들어 반환.</li>
+  </ul>
+</li>
+<li><code>Runner.java</code>는 <strong>이번엔 완성본을 주지 않는다.</strong> 파일 안 주석의 순서(product 5개 정도 만들기 → List에 담기 → 두 method 호출 → 결과 출력)를 보고 <code>main</code>부터 전부 직접 작성한다.</li>
+</ul>
+
+<h2>퀴즈</h2>
+
+<div class="quiz" data-answer="ArrayList">
+<p class="quiz-q">Q1. List interface를 구현한 대표적인 class는? (영어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="Set">
+<p class="quiz-q">Q2. 중복을 자동으로 제거해주는 collection interface는? (영어 한 단어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="key">
+<p class="quiz-q">Q3. Map에서 중복이 허용되지 않는 것은 key인가 value인가? (영어 한 단어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="ask-agent">
+<code>&lt;String&gt;</code>, <code>&lt;Integer, Product&gt;</code> 같은 <code>&lt;&gt;</code> 문법이 정확히 뭘 하는 건지 궁금하면 바로 물어봐도 된다 — 다음 큐 항목(generics)에서 제대로 다루지만, 지금 맛보기로 짧게 설명해도 된다.
+</div>
+
+<div class="nav-links">
+이전: <a href="0008-interface-abstract-class.html">interface와 abstract class</a><br>
+다음: generics — 큐 9/11<br>
+참고 문서: <a href="../reference/java-collections-cheatsheet.html">Collections Cheatsheet</a>
+</div>
+
+</body>
+</html>

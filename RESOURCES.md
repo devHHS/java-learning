@@ -16,6 +16,10 @@
 - [Oracle Java Tutorials — Polymorphism](https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html) — virtual method invocation, 선언 타입이 아니라 실제 object 타입의 override된 method가 실행되는 원리.
 - [Oracle Java Tutorials — Interfaces](https://docs.oracle.com/javase/tutorial/java/IandI/createinterface.html) — interface를 "contract"로 정의하는 근거, implements와 instantiate 불가 규칙.
 - [Oracle Java Tutorials — Abstract Methods and Classes](https://docs.oracle.com/javase/tutorial/java/IandI/abstract.html) — abstract class/method 정의, interface와의 field/구현/다중 implements 차이, 언제 뭘 쓰는지 공식 가이드라인.
+- [Oracle Java Tutorials — Introduction to Collections](https://docs.oracle.com/javase/tutorial/collections/intro/index.html) — collections framework의 정의 (interfaces/implementations/algorithms).
+- [Oracle Java Platform SE 8 — List](https://docs.oracle.com/javase/8/docs/api/java/util/List.html) — ordered, 중복 허용 근거.
+- [Oracle Java Platform SE 8 — Set](https://docs.oracle.com/javase/8/docs/api/java/util/Set.html) — 중복 불허 근거.
+- [Oracle Java Platform SE 8 — Map](https://docs.oracle.com/javase/8/docs/api/java/util/Map.html) — key-value, key 중복 불가 근거.
 
 ## 아직 필요
 

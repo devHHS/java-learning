@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Collections Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Collections Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0009-collections.html">0009</a>에서 압축</p>
+
+<h2>세 가지 비교</h2>
+<table>
+<tr><th></th><th>List</th><th>Set</th><th>Map</th></tr>
+<tr><td>순서</td><td>보장됨</td><td>보장 안 됨</td><td>보장 안 됨 (HashMap 기준)</td></tr>
+<tr><td>중복</td><td>허용</td><td>불허</td><td>key는 불허, value는 허용</td></tr>
+<tr><td>대표 구현체</td><td><code>ArrayList</code></td><td><code>HashSet</code></td><td><code>HashMap</code></td></tr>
+<tr><td>접근 방식</td><td>index (<code>get(0)</code>)</td><td>포함 여부 (<code>contains()</code>)</td><td>key (<code>get(key)</code>)</td></tr>
+</table>
+
+<h2>패턴</h2>
+<pre><code>List&lt;String&gt; tags = new ArrayList&lt;&gt;();
+tags.add("food");
+tags.get(0);
+
+Set&lt;String&gt; categories = new HashSet&lt;&gt;();
+categories.add("전자제품");
+categories.add("전자제품");   // 무시됨
+categories.size();             // 1
+
+Map&lt;Integer, String&gt; nameById = new HashMap&lt;&gt;();
+nameById.put(1, "김철수");
+nameById.get(1);                // "김철수"</code></pre>
+
+<h2>고르는 기준</h2>
+<p>순서 유지 + 중복 허용 → <strong>List</strong>. 중복 제거만 필요 → <strong>Set</strong>. id로 빠른 조회 → <strong>Map</strong>.</p>
+
+<h2>0008과의 연결</h2>
+<p>List/Set/Map은 전부 <strong>interface</strong>다. ArrayList/HashSet/HashMap은 그 구현체(implementation)다 — 선언 타입(interface)과 실제 타입(구현체)이 다른 게 여기서도 그대로 적용된다.</p>
+
+<h2>출처</h2>
+<p>
+<a href="https://docs.oracle.com/javase/tutorial/collections/intro/index.html" target="_blank">Oracle Java Tutorials — Introduction to Collections</a><br>
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html" target="_blank">Oracle Java Platform SE 8 — List</a><br>
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html" target="_blank">Oracle Java Platform SE 8 — Set</a><br>
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html" target="_blank">Oracle Java Platform SE 8 — Map</a>
+</p>
+
+</body>
+</html>
