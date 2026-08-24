@@ -1,3 +1,5 @@
+package p0008;
+
 public abstract class PaymentMethod {
 
     protected String accountId;

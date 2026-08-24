@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0010 generics</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>generics — 타입을 매개변수로 받기</h1>
+<p class="subtitle">레슨 0010 · 문법 기초 큐 9/11 · 0009에서 미뤄둔 &lt;&gt; 문법, 이제 제대로</p>
+
+<div class="mission-tie">
+Spring Data JPA의 repository는 이렇게 생겼다: <code>interface ReceiptRepository extends JpaRepository&lt;Receipt, Long&gt;</code>. <code>&lt;Receipt, Long&gt;</code> 부분이 정확히 뭘 하는 건지 지금은 설명 못 할 것이다. 오늘 배우면 설명할 수 있게 된다.
+</div>
+
+<h2>1. 문제 상황 — generics가 없다면</h2>
+<p>
+0009에서 <code>List&lt;String&gt;</code>을 그냥 썼지만, <code>&lt;String&gt;</code>을 빼고 옛날 방식(Java 5 이전)으로 쓴다면 이렇게 된다.
+</p>
+<pre><code>List box = new ArrayList();   // 타입 지정 없음 — 뭐든 담을 수 있음
+box.add(42);
+box.add("문자열");             // 컴파일러가 막지 못함
+
+Integer x = (Integer) box.get(1);   // 런타임에 캐스팅 실패 — ClassCastException</code></pre>
+<p class="source">
+"There is no way to verify, at compile time, how the class is used. One part of the code may place an Integer in the box and expect to get Integers out of it, while another part of the code may mistakenly pass in a String, resulting in a runtime error." — <a href="https://docs.oracle.com/javase/tutorial/java/generics/types.html" target="_blank">Oracle Java Tutorials — Generic Types</a>
+</p>
+<p>
+문제의 핵심: <strong>타입 오류가 컴파일 타임이 아니라 런타임에 터진다.</strong> 배포하고 나서야 알게 된다는 뜻이다.
+</p>
+
+<h2>2. 해결 — type parameter</h2>
+<pre><code>List&lt;String&gt; box = new ArrayList&lt;&gt;();
+box.add("문자열");
+box.add(42);        // 컴파일 에러 — 여기서 바로 막힘
+
+String s = box.get(0);   // 캐스팅 필요 없음, 컴파일러가 이미 String인 걸 앎</code></pre>
+<p>
+<code>&lt;String&gt;</code>은 "이 <code>List</code>가 다룰 타입은 <code>String</code>이다"를 컴파일러에게 알려주는 것이다. 0009에서 <code>List&lt;String&gt;</code>, <code>Map&lt;Integer, Product&gt;</code>를 쓸 때 이미 사용한 문법이다 — 그때는 "이런 게 있다"까지만, 오늘은 "왜, 어떻게"를 본다.
+</p>
+
+<h2>3. 직접 정의하기 — generic class</h2>
+<p>
+<code>List</code>, <code>Map</code>은 이미 만들어진 generic class다. 이제 직접 만들어본다. 백엔드에서 흔한 패턴: 목록 조회 API가 "항목들 + 전체 개수"를 함께 반환하는 <code>PagedResult</code>.
+</p>
+<pre><code>public class PagedResult&lt;T&gt; {
+    private List&lt;T&gt; items;
+    private int totalCount;
+
+    public PagedResult(List&lt;T&gt; items, int totalCount) {
+        this.items = items;
+        this.totalCount = totalCount;
+    }
+
+    public List&lt;T&gt; getItems() { return items; }
+    public int getTotalCount() { return totalCount; }
+}
+
+PagedResult&lt;Receipt&gt; page = new PagedResult&lt;&gt;(receipts, 42);</code></pre>
+<p class="source">
+"A generic type is a generic class or interface that is parameterized over types... A type variable can be any non-primitive type you specify." — <a href="https://docs.oracle.com/javase/tutorial/java/generics/types.html" target="_blank">Oracle Java Tutorials — Generic Types</a>
+</p>
+<p>
+<code>T</code>는 클래스 이름 옆 <code>&lt;T&gt;</code>에서 선언되는 <strong>type parameter</strong>다 — "실제 타입은 나중에 정해진다"는 placeholder. <code>new PagedResult&lt;Receipt&gt;(...)</code>처럼 실제로 쓸 때 <code>Receipt</code>가 그 자리를 채운다 (이걸 <strong>type argument</strong>라 부른다). 관례상 type parameter는 대문자 한 글자 — <code>T</code>(Type), <code>E</code>(Element), <code>K</code>/<code>V</code>(Key/Value) — 를 쓴다.
+</p>
+
+<h2>4. generic method — method 하나만 generic으로</h2>
+<p>
+클래스 전체가 아니라 method 하나만 타입을 매개변수로 받을 수도 있다.
+</p>
+<pre><code>public static &lt;T&gt; T firstOrNull(PagedResult&lt;T&gt; result) {
+    if (result.getItems().isEmpty()) return null;
+    return result.getItems().get(0);
+}</code></pre>
+<p class="source">
+"The syntax for a generic method includes a list of type parameters, inside angle brackets, which appears before the method's return type." — <a href="https://docs.oracle.com/javase/tutorial/java/generics/methods.html" target="_blank">Oracle Java Tutorials — Generic Methods</a>
+</p>
+<p>
+<code>static &lt;T&gt; T firstOrNull(...)</code>에서 앞의 <code>&lt;T&gt;</code>는 "이 method는 T라는 타입을 하나 받는다"는 선언이고, 뒤의 <code>T</code>는 return type이다. 순서가 중요하다 — <code>&lt;T&gt;</code>가 먼저, return type이 그다음.
+</p>
+
+<div class="bridge">
+Quarkus Panache의 repository도 똑같은 패턴이다: <code>public class PersonRepository implements PanacheRepository&lt;Person&gt;</code>. <code>&lt;Person&gt;</code>이 "이 repository가 관리하는 entity가 Person"이라는 뜻이다. Spring Data JPA의 <code>JpaRepository&lt;T, ID&gt;</code>도 정확히 같은 개념이고, type parameter가 하나 더 있을 뿐이다 (관리할 entity 타입 + 그 entity의 id 타입).
+</div>
+
+<h2>5. invoice-app에 바로 적용</h2>
+<p>
+<code>interface ReceiptRepository extends JpaRepository&lt;Receipt, Long&gt;</code>에서 <code>T</code> 자리엔 <code>Receipt</code>(이 repository가 관리하는 entity), <code>ID</code> 자리엔 <code>Long</code>(<code>Receipt</code>의 primary key 타입)이 들어간다.
+</p>
+<p class="source">
+"The central interface in the Spring Data repository abstraction is Repository. It takes the domain class to manage as well as the identifier type of the domain class as type arguments." — <a href="https://docs.spring.io/spring-data/jpa/reference/repositories/core-concepts.html" target="_blank">Spring Data JPA Reference — Core Concepts</a>
+</p>
+<p>
+이 한 줄을 쓰는 순간 <code>findById(Long id)</code>가 <code>Optional&lt;Receipt&gt;</code>를 반환한다는 것까지 컴파일러가 안다 — 캐스팅도, 런타임 타입 오류도 없다. 이게 generics 없이는 불가능한 API 설계다.
+</p>
+
+<h2>Hands-on: PagedResult 완성하고 직접 실행해보기</h2>
+<p>
+<code>practice/0010-generics/</code>를 연다. <code>Item.java</code>는 완성돼 있다 (id, name).
+</p>
+<ul>
+<li><code>PagedResult.java</code>의 TODO 두 곳:
+  <ul>
+    <li>constructor — <code>items</code>와 <code>totalCount</code>를 받아 필드에 저장.</li>
+    <li><code>getItems()</code>, <code>getTotalCount()</code> getter 두 개.</li>
+  </ul>
+</li>
+<li><code>PageUtils.java</code>의 TODO 한 곳: generic static method <code>firstOrNull(PagedResult&lt;T&gt; result)</code> — 비어있지 않으면 첫 항목, 비어있으면 <code>null</code> 반환.</li>
+<li><code>Runner.java</code>는 완성본 없이 전부 직접 작성한다. 파일 안 주석의 순서(Item 3~4개 만들기 → List에 담기 → PagedResult로 감싸기 → firstOrNull 호출 → 결과 출력, 빈 리스트로도 한 번 더 테스트)를 보고 작성.</li>
+</ul>
+
+<h2>퀴즈</h2>
+
+<div class="quiz" data-answer="ClassCastException">
+<p class="quiz-q">Q1. generics 없이 타입을 잘못 캐스팅하면 런타임에 어떤 예외가 발생하는가? (영어, 클래스 이름)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="parameter">
+<p class="quiz-q">Q2. <code>class PagedResult&lt;T&gt;</code>에서 <code>&lt;T&gt;</code> 안의 <code>T</code>를 부르는 이름은 type ___? (영어 한 단어, 빈칸)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="primary key">
+<p class="quiz-q">Q3. Spring Data repository의 두 번째 type argument 자리는 domain class의 무엇을 나타내는가? (영어, 두 단어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="ask-agent">
+bounded type(<code>&lt;T extends Number&gt;</code>처럼 타입을 제한하는 문법)이나 wildcard(<code>&lt;? extends T&gt;</code>)가 궁금하면 물어봐도 된다 — 오늘은 범위 밖이라 다루지 않았지만, 필요하면 짧게 설명해줄 수 있다.
+</div>
+
+<div class="nav-links">
+이전: <a href="0009-collections.html">collections</a><br>
+다음: exception handling (checked vs unchecked) — 큐 10/11<br>
+참고 문서: <a href="../reference/java-generics-cheatsheet.html">Generics Cheatsheet</a>
+</div>
+
+</body>
+</html>

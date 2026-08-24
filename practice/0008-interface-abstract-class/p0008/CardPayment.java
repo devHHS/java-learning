@@ -1,3 +1,5 @@
+package p0008;
+
 public class CardPayment extends PaymentMethod /* TODO: PaymentMethod를 extends해라 */ {
 
     public CardPayment(String accountId) {

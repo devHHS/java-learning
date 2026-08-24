@@ -1,3 +1,5 @@
+package p0006;
+
 public class Ticket {
 
     private static int nextId = 1;

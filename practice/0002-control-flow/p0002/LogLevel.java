@@ -1,3 +1,5 @@
+package p0002;
+
 public class LogLevel {
 
     static int getLogLevelSeverity(String level) {

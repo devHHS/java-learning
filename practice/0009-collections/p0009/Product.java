@@ -1,3 +1,5 @@
+package p0009;
+
 public class Product {
 
     private int id;

@@ -1,3 +1,5 @@
+package p0009;
+
 // 이번엔 완성본을 주지 않는다. 아래 순서대로 main()부터 직접 작성해라.
 //
 // 1. List<Product> products = new ArrayList<>(); 로 List를 만든다.

@@ -1,3 +1,5 @@
+package p0007;
+
 public class Notification {
 
     protected String recipient;

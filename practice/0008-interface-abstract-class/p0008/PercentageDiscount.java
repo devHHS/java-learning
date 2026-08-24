@@ -1,3 +1,5 @@
+package p0008;
+
 public class PercentageDiscount implements DiscountPolicy {
 
     private double percent;

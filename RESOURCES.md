@@ -20,11 +20,18 @@
 - [Oracle Java Platform SE 8 — List](https://docs.oracle.com/javase/8/docs/api/java/util/List.html) — ordered, 중복 허용 근거.
 - [Oracle Java Platform SE 8 — Set](https://docs.oracle.com/javase/8/docs/api/java/util/Set.html) — 중복 불허 근거.
 - [Oracle Java Platform SE 8 — Map](https://docs.oracle.com/javase/8/docs/api/java/util/Map.html) — key-value, key 중복 불가 근거.
+- [Oracle Java Tutorials — Generic Types](https://docs.oracle.com/javase/tutorial/java/generics/types.html) — generic class/type parameter 정의, generics 없을 때 ClassCastException 근거.
+- [Oracle Java Tutorials — Generic Methods](https://docs.oracle.com/javase/tutorial/java/generics/methods.html) — method 단위 generics 문법(`<T>`가 return type 앞에 옴).
+
+## Spring / Quarkus (문법 큐 이후 본격 사용, 지금은 bridge로만)
+
+- [Spring Data JPA Reference — Core Concepts](https://docs.spring.io/spring-data/jpa/reference/repositories/core-concepts.html) — `Repository<T, ID>`가 domain class와 id 타입을 type argument로 받는다는 근거.
+- [Quarkus Guides — Hibernate ORM with Panache](https://quarkus.io/guides/hibernate-orm-panache) — `PanacheRepository<Entity>` 패턴, generics의 Quarkus 다리로 사용.
 
 ## 아직 필요
 
 - Spring Boot 공식 문서 (레슨이 Spring 개념으로 넘어갈 때 추가)
-- BigDecimal / 금액 처리 공식 레퍼런스 (collections/generics 큐 이후 필요)
+- BigDecimal / 금액 처리 공식 레퍼런스 (generics 큐 이후 필요)
 
 ## 커뮤니티 (wisdom)
 

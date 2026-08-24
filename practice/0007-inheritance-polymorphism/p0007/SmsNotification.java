@@ -1,3 +1,5 @@
+package p0007;
+
 public class SmsNotification extends Notification {
 
     private int maxLength;

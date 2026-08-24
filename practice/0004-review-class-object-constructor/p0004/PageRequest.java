@@ -1,3 +1,5 @@
+package p0004;
+
 public class PageRequest {
 
     private int pageNumber;

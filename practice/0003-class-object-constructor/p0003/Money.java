@@ -1,3 +1,5 @@
+package p0003;
+
 public class Money {
 
 

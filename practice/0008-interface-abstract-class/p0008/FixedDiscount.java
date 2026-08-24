@@ -1,3 +1,5 @@
+package p0008;
+
 public class FixedDiscount implements DiscountPolicy {
 
     private double amountOff;

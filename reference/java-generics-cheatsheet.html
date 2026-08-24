@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Generics Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Generics Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0010-generics.html">0010</a>에서 압축</p>
+
+<h2>용어</h2>
+<table>
+<tr><th>용어</th><th>의미</th><th>예</th></tr>
+<tr><td>type parameter</td><td>클래스/method 정의에 쓰는 타입 placeholder</td><td><code>class Box&lt;T&gt;</code>의 <code>T</code></td></tr>
+<tr><td>type argument</td><td>실제로 채워 넣는 타입</td><td><code>Box&lt;Receipt&gt;</code>의 <code>Receipt</code></td></tr>
+<tr><td>관례 이름</td><td>대문자 한 글자</td><td>T(Type), E(Element), K/V(Key/Value), ID</td></tr>
+</table>
+
+<h2>패턴</h2>
+<pre><code>// generic class
+public class PagedResult&lt;T&gt; {
+    private List&lt;T&gt; items;
+    private int totalCount;
+
+    public PagedResult(List&lt;T&gt; items, int totalCount) {
+        this.items = items;
+        this.totalCount = totalCount;
+    }
+    public List&lt;T&gt; getItems() { return items; }
+    public int getTotalCount() { return totalCount; }
+}
+
+// 사용
+PagedResult&lt;Receipt&gt; page = new PagedResult&lt;&gt;(receipts, 42);
+
+// generic method — <T>는 return type 앞에
+public static &lt;T&gt; T firstOrNull(PagedResult&lt;T&gt; result) {
+    if (result.getItems().isEmpty()) return null;
+    return result.getItems().get(0);
+}</code></pre>
+
+<h2>왜 쓰는가</h2>
+<p>
+generics 없이 <code>Object</code>로 뭐든 담으면, 타입이 맞는지는 <strong>런타임</strong>에야 <code>ClassCastException</code>으로 드러난다. <code>&lt;T&gt;</code>를 쓰면 컴파일러가 그 자리에서 막아준다 — 배포 전, 코드 작성 시점에.
+</p>
+
+<h2>Spring / Quarkus 연결</h2>
+<table>
+<tr><th></th><th>선언</th><th>type parameter 의미</th></tr>
+<tr><td>Spring Data JPA</td><td><code>interface ReceiptRepository extends JpaRepository&lt;Receipt, Long&gt;</code></td><td><code>T</code> = entity, <code>ID</code> = primary key 타입</td></tr>
+<tr><td>Quarkus Panache</td><td><code>class PersonRepository implements PanacheRepository&lt;Person&gt;</code></td><td><code>T</code> = entity</td></tr>
+</table>
+
+<h2>0009와의 연결</h2>
+<p>
+<code>List&lt;String&gt;</code>, <code>Map&lt;Integer, Product&gt;</code>는 이미 generics를 쓰고 있었다 — <code>List</code>와 <code>Map</code>이 generic interface이기 때문. 오늘은 그 <code>&lt;&gt;</code>를 직접 만드는 법을 배운 것.
+</p>
+
+<h2>출처</h2>
+<p>
+<a href="https://docs.oracle.com/javase/tutorial/java/generics/types.html" target="_blank">Oracle Java Tutorials — Generic Types</a><br>
+<a href="https://docs.oracle.com/javase/tutorial/java/generics/methods.html" target="_blank">Oracle Java Tutorials — Generic Methods</a><br>
+<a href="https://docs.spring.io/spring-data/jpa/reference/repositories/core-concepts.html" target="_blank">Spring Data JPA Reference — Core Concepts</a><br>
+<a href="https://quarkus.io/guides/hibernate-orm-panache" target="_blank">Quarkus Guides — Hibernate ORM with Panache</a>
+</p>
+
+</body>
+</html>
