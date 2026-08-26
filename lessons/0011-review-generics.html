@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0011 review: generics</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>복습: generics</h1>
+<p class="subtitle">레슨 0011 · 복습 세션 (큐 진행 아님, 0010 재확인) · PagedResult가 아닌 ApiResponse&lt;T&gt;로 처음부터 다시</p>
+
+<div class="mission-tie">
+0010 끝에 "오늘 한 것에 대해 이해를 제대로 못 했다"고 스스로 평가했다. hands-on(<code>PagedResult</code>, <code>firstOrNull</code>)은 다 해냈지만 개념이 아직 단단하지 않다는 뜻이다. 오늘은 새로 안 배우고, <strong>같은 개념을 다른 모양으로 기억에서 다시 꺼내는 연습</strong>만 한다. REST API가 응답을 감싸서 내려주는 <code>{ success, data, error }</code> 형태의 envelope는 백엔드에서 아주 흔한 패턴이고, invoice-app의 controller도 결국 이런 형태를 반환하게 될 것이다.
+</div>
+
+<h2>Quick recall — 코드 보기 전에 먼저 답해보기</h2>
+<p>바로 아래로 스크롤하지 말고, 0010 기억만으로 답해보자.</p>
+
+<div class="quiz" data-answer="parameter">
+<p class="quiz-q">Q1. <code>class Box&lt;T&gt;</code>에서 <code>T</code>처럼 클래스 정의에 쓰는 타입 placeholder를 type ___라고 부른다. (영어 한 단어, 빈칸)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="argument">
+<p class="quiz-q">Q2. <code>new Box&lt;Receipt&gt;()</code>처럼 실제로 채워 넣는 <code>Receipt</code>는 type ___라고 부른다. (영어 한 단어, 빈칸)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="앞">
+<p class="quiz-q">Q3. generic method를 선언할 때 <code>&lt;T&gt;</code>는 return type의 앞과 뒤 중 어디에 오는가? (한 단어로 답)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="ClassCastException">
+<p class="quiz-q">Q4. generics 없이 <code>Object</code>로 뭐든 담다가 타입을 잘못 캐스팅하면 런타임에 어떤 예외가 나는가? (영어, 클래스 이름)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<h2>Hands-on: ApiResponse&lt;T&gt; — 처음부터 다시 작성</h2>
+<p>
+0010에서는 <code>PagedResult&lt;T&gt;</code>(생성자로 바로 만드는 방식)와 <code>PageUtils.firstOrNull</code>(별도 클래스의 generic method)을 썼다. 이번엔 <strong>하나의 클래스 안에서</strong> generic method 두 개가 그 클래스 자신의 generic type을 반환하는, 조금 더 나아간 모양을 연습한다. 이것도 시작 코드 없이 처음부터 작성한다.
+</p>
+
+<p><strong>1) <code>practice/0011-review-generics/p0011/Product.java</code></strong> — 감쌀 대상이 될 간단한 클래스. field: <code>id</code>(<code>Long</code>), <code>name</code>(<code>String</code>), <code>price</code>(<code>double</code>). constructor 하나(세 값 다 받음), getter 세 개. (0003~0006에서 이미 여러 번 만든 수준 — 여기선 새로 배울 것 없음.)</p>
+
+<p><strong>2) <code>practice/0011-review-generics/p0011/ApiResponse.java</code></strong> — 오늘의 핵심. 아래 조건으로 작성:</p>
+<ul>
+<li>class 자체가 <code>&lt;T&gt;</code>를 갖는 generic class다.</li>
+<li>field: <code>success</code>(<code>boolean</code>), <code>data</code>(<code>T</code>), <code>errorMessage</code>(<code>String</code>)</li>
+<li>constructor: 세 field를 모두 받아서 대입한다. (이 constructor를 <code>Runner</code>에서 직접 부르진 않을 것이다 — 아래 static method 두 개를 통해서만 쓴다.)</li>
+<li>static factory method 두 개, 각각 <strong>자기 자신의 <code>&lt;T&gt;</code></strong>를 선언한다 (class의 <code>T</code>와는 별개로 method 앞에 붙이는 것 — 0010의 <code>firstOrNull</code>과 똑같은 위치):
+  <ul>
+    <li><code>public static &lt;T&gt; ApiResponse&lt;T&gt; success(T data)</code> — <code>success=true</code>, 받은 <code>data</code>, <code>errorMessage=null</code>로 새 <code>ApiResponse&lt;T&gt;</code>를 만들어 반환</li>
+    <li><code>public static &lt;T&gt; ApiResponse&lt;T&gt; error(String message)</code> — <code>success=false</code>, <code>data=null</code>, 받은 <code>message</code>로 새 <code>ApiResponse&lt;T&gt;</code>를 만들어 반환</li>
+  </ul>
+</li>
+<li>getter 세 개: <code>isSuccess()</code>, <code>getData()</code>, <code>getErrorMessage()</code></li>
+</ul>
+
+<p><strong>3) <code>practice/0011-review-generics/p0011/Runner.java</code></strong> — 완성본 없이 직접 작성:</p>
+<ul>
+<li><code>Product</code> 하나 생성 (예: id=1L, name="Keyboard", price=49.99)</li>
+<li><code>ApiResponse.success(...)</code>로 그 <code>Product</code>를 감싸서 <code>ApiResponse&lt;Product&gt;</code> 하나 생성 → <code>isSuccess()</code>와 <code>getData().getName()</code> 출력</li>
+<li><code>ApiResponse.error("Product not found")</code>로 실패 케이스 하나 생성 → <code>isSuccess()</code>, <code>getErrorMessage()</code> 출력, <code>getData()</code>가 <code>null</code>인지도 확인</li>
+</ul>
+
+<div class="callout">
+<strong>스스로 체크리스트</strong> (다 쓰고 나서 코드를 다시 읽으며 확인):
+<ul>
+<li><code>class ApiResponse&lt;T&gt;</code>처럼 클래스 선언 자체에 <code>&lt;T&gt;</code>를 붙였는가?</li>
+<li><code>success</code>/<code>error</code> method 앞에 각각 <code>&lt;T&gt;</code>를 따로 선언했는가? (class의 <code>&lt;T&gt;</code>와 이름은 같아도 별개의 선언이다)</li>
+<li><code>data</code> field의 타입이 <code>Object</code>가 아니라 <code>T</code>인가?</li>
+<li><code>Runner</code>에서 <code>ApiResponse&lt;Product&gt;</code>처럼 타입을 쓸 때, 그게 type parameter가 아니라 type argument라는 걸 구분할 수 있는가?</li>
+</ul>
+</div>
+
+<div class="ask-agent">
+막히면 바로 물어보되, 먼저 0010의 <code>firstOrNull</code> 코드와 비교해서 "여기 <code>&lt;T&gt;</code> 위치가 그거랑 똑같네" 하고 스스로 연결지어본 다음에 물어보자. bounded type(<code>&lt;T extends Number&gt;</code>)이나 wildcard는 오늘도 범위 밖이지만 궁금하면 짧게 설명해줄 수 있다.
+</div>
+
+<div class="nav-links">
+이전 (원 레슨): <a href="0010-generics.html">generics</a><br>
+다음: exception handling (checked vs unchecked) — 큐 10/11<br>
+참고 문서: <a href="../reference/java-generics-cheatsheet.html">Generics Cheatsheet</a>
+</div>
+
+</body>
+</html>
