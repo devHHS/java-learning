@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0012 review: generics (repository pattern)</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>복습: generics — repository 패턴 (두 개의 type parameter)</h1>
+<p class="subtitle">레슨 0012 · 복습 세션 (큐 진행 아님, 0010/0011 재확인) · 큐는 9/11 유지</p>
+
+<div class="mission-tie">
+0011에서 <code>ApiResponse&lt;T&gt;</code>는 힌트 없이 거의 다 썼지만, 스스로 "완벽하지 않다"고 판단했다. 지금까지 두 번의 generics 연습(<code>PagedResult&lt;T&gt;</code>, <code>ApiResponse&lt;T&gt;</code>)은 전부 <strong>type parameter 하나</strong>였다. 그런데 <a href="../reference/java-generics-cheatsheet.html">generics cheatsheet</a>에 이미 적어둔 Spring Data JPA 브릿지, <code>JpaRepository&lt;Receipt, Long&gt;</code>는 <strong>type parameter가 두 개</strong>다. invoice-app에서 곧 직접 쓸 그 모양을, 오늘 손으로 직접 만들어본다.
+<br><br>
+오늘은 두 파트로 나눠서 진행한다 — <strong>① hands-on 코드 작성</strong>(아래), <strong>② 코드 없이 말로 설명하기</strong>(코드를 다 쓰고 나서 채팅으로 진행, 이 문서엔 질문만 적어둔다).
+</div>
+
+<h2>Part 1 — Hands-on: InMemoryRepository&lt;T, ID&gt;</h2>
+<p>
+Spring Data JPA의 <code>JpaRepository&lt;T, ID&gt;</code>는 실제로는 database를 쓰지만, 오늘은 그 인터페이스 모양만 흉내내서 <code>Map</code>에 저장하는 아주 단순한 버전을 만든다. 시작 코드 없이 처음부터 작성한다. 0009(collections)의 <code>Map</code>과 0010/0011의 generic class/method가 합쳐지는 지점이다.
+</p>
+
+<p><strong>1) <code>practice/0012-review-generics-repository/p0012/Employee.java</code></strong> — 감쌀 대상. field: <code>id</code>(<code>Long</code>), <code>name</code>(<code>String</code>), <code>department</code>(<code>String</code>). constructor 하나(세 값 다 받음), getter 세 개. (새로 배울 것 없음 — 이미 여러 번 만든 수준.)</p>
+
+<p><strong>2) <code>practice/0012-review-generics-repository/p0012/InMemoryRepository.java</code></strong> — 오늘의 핵심. 아래 조건으로 작성:</p>
+<ul>
+<li>class 자체가 <strong>두 개의 type parameter</strong> <code>&lt;T, ID&gt;</code>를 갖는다. (<code>JpaRepository&lt;T, ID&gt;</code>와 같은 자리.)</li>
+<li>field: <code>Map&lt;ID, T&gt; store</code> — constructor에서 <code>new HashMap&lt;&gt;()</code>로 초기화.</li>
+<li>method 세 개 (전부 instance method, class의 <code>T</code>/<code>ID</code>를 그대로 씀 — 0011의 static method와 다르게 <code>&lt;T&gt;</code>를 method 앞에 또 선언하지 않는다):
+  <ul>
+    <li><code>T save(ID id, T entity)</code> — <code>store</code>에 <code>id</code> 키로 <code>entity</code>를 넣고, 그 <code>entity</code>를 그대로 반환</li>
+    <li><code>T findById(ID id)</code> — <code>store</code>에서 그 <code>id</code>로 찾은 값을 반환 (없으면 <code>null</code> — <code>Map.get</code>이 원래 그렇게 동작한다, 별도 처리 필요 없음)</li>
+    <li><code>boolean deleteById(ID id)</code> — 그 <code>id</code>를 <code>store</code>에서 제거하고, 실제로 뭔가 있었는지(제거 전에 있었는지)를 <code>boolean</code>으로 반환</li>
+  </ul>
+</li>
+<li><code>int count()</code> — 현재 저장된 개수 반환</li>
+</ul>
+
+<p><strong>3) <code>practice/0012-review-generics-repository/p0012/Runner.java</code></strong> — 완성본 없이 직접 작성:</p>
+<ul>
+<li><code>InMemoryRepository&lt;Employee, Long&gt;</code> 하나 생성</li>
+<li><code>Employee</code> 두 개 생성해서 각각 다른 <code>id</code>로 <code>save</code></li>
+<li>존재하는 <code>id</code>로 <code>findById</code> → 이름 출력</li>
+<li>존재하지 않는 <code>id</code>(예: <code>999L</code>)로 <code>findById</code> → <code>null</code>인지 출력</li>
+<li>저장했던 <code>id</code> 하나를 <code>deleteById</code> → 결과(<code>true</code>) 출력</li>
+<li><code>count()</code> 출력 (삭제 후 몇 개 남았는지)</li>
+</ul>
+
+<div class="callout">
+<strong>스스로 체크리스트</strong> (다 쓰고 나서 코드를 다시 읽으며 확인):
+<ul>
+<li><code>class InMemoryRepository&lt;T, ID&gt;</code>처럼 콤마로 구분된 두 개의 type parameter를 class 선언에 붙였는가?</li>
+<li><code>Map</code>의 key 타입과 value 타입이 <code>&lt;ID, T&gt;</code> 순서로 <code>InMemoryRepository&lt;T, ID&gt;</code>의 순서와 반대인 걸 알아챘는가? (<code>Map&lt;K, V&gt;</code>는 원래 key가 먼저다 — 이번 class는 <code>T</code>를 먼저 선언했을 뿐, 둘은 별개의 순서다.)</li>
+<li><code>save</code>/<code>findById</code>/<code>deleteById</code>/<code>count</code> 앞에 <code>&lt;T&gt;</code>를 또 선언하지 않았는가? (0011의 static method와 다르게, 이번엔 instance method라서 class의 <code>T</code>를 그대로 쓸 수 있다 — static context가 아니기 때문.)</li>
+<li><code>Runner</code>에서 <code>InMemoryRepository&lt;Employee, Long&gt;</code>를 쓸 때, <code>Employee</code>와 <code>Long</code> 각각이 어떤 type parameter의 type argument인지 짚을 수 있는가?</li>
+</ul>
+</div>
+
+<h2>Part 2 — 코드 없이 말로 설명하기</h2>
+<p>
+Part 1을 다 쓰고 컴파일·실행까지 확인한 다음, 코드나 이 문서를 다시 보지 않고 채팅으로 아래 질문에 답한다. 정확한 단어보다 <strong>본인 말로 원리를 짚는지</strong>가 중요하다.
+</p>
+<ol>
+<li>type parameter와 type argument의 차이를, "parameter"/"argument"라는 단어를 안 쓰고 다른 표현으로 설명해보기.</li>
+<li><code>InMemoryRepository&lt;T, ID&gt;</code>가 왜 type parameter 하나가 아니라 두 개가 필요한지 설명해보기.</li>
+<li><code>findById</code>가 <code>T</code> 대신 <code>Object</code>를 반환하도록 선언했다면 <code>Runner</code>에서 무슨 문제가 생기는지 설명해보기.</li>
+<li>class 선언의 <code>&lt;T, ID&gt;</code>와, 0011에서 썼던 static method 앞의 <code>&lt;T&gt;</code>가 왜 같은 글자를 써도 서로 다른 선언인지 설명해보기.</li>
+<li>오늘 만든 <code>InMemoryRepository&lt;Employee, Long&gt;</code>가 cheatsheet의 <code>JpaRepository&lt;Receipt, Long&gt;</code>와 어떻게 대응되는지 (<code>Employee</code>는 뭐에 해당, <code>Long</code>은 뭐에 해당) 설명해보기.</li>
+</ol>
+
+<div class="ask-agent">
+Part 1에서 막히면 바로 물어보되, 먼저 0011의 <code>ApiResponse&lt;T&gt;</code> 코드와 비교해서 뭐가 같고 뭐가 다른지 스스로 짚어본 다음 물어보자. Part 2는 정답을 맞히는 게 목적이 아니라 설명이 막히는 지점을 찾는 게 목적이니, 막히면 그 지점에서 바로 질문하면 된다.
+</div>
+
+<div class="nav-links">
+이전 (직전 복습): <a href="0011-review-generics.html">0011 review: generics</a><br>
+다음: exception handling (checked vs unchecked) — 큐 10/11, 이 복습 다음에 진행<br>
+참고 문서: <a href="../reference/java-generics-cheatsheet.html">Generics Cheatsheet</a>
+</div>
+
+</body>
+</html>

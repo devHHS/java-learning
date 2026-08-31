@@ -8,7 +8,7 @@
 <body>
 
 <h1>Generics Cheatsheet</h1>
-<p class="subtitle">레슨 <a href="../lessons/0010-generics.html">0010</a>에서 압축</p>
+<p class="subtitle">레슨 <a href="../lessons/0010-generics.html">0010</a> · <a href="../lessons/0012-review-generics-repository.html">0012</a>에서 압축</p>
 
 <h2>용어</h2>
 <table>
@@ -40,6 +40,26 @@ public static &lt;T&gt; T firstOrNull(PagedResult&lt;T&gt; result) {
     if (result.getItems().isEmpty()) return null;
     return result.getItems().get(0);
 }</code></pre>
+
+<h2>type parameter 두 개</h2>
+<pre><code>// class 선언에 콤마로 두 개
+public class InMemoryRepository&lt;T, ID&gt; {
+    private Map&lt;ID, T&gt; store = new HashMap&lt;&gt;();
+
+    public T save(ID id, T entity) {
+        store.put(id, entity);
+        return entity;
+    }
+    public T findById(ID id) {
+        return store.get(id); // 없으면 null
+    }
+}
+
+// 사용
+InMemoryRepository&lt;Employee, Long&gt; repo = new InMemoryRepository&lt;&gt;();</code></pre>
+<p>
+instance method(<code>save</code>, <code>findById</code>)는 class의 <code>T</code>/<code>ID</code>를 그대로 쓴다 — method 앞에 <code>&lt;T&gt;</code>를 또 선언하지 않는다. static method는 instance가 없어 class의 <code>T</code>를 모르므로, 자기 자신의 <code>&lt;T&gt;</code>를 따로 선언해야 한다 (위 <code>firstOrNull</code>처럼).
+</p>
 
 <h2>왜 쓰는가</h2>
 <p>
