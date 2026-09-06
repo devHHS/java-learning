@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Exception Handling Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Exception Handling Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0013-exception-handling.html">0013</a>에서 압축</p>
+
+<h2>용어</h2>
+<table>
+<tr><th>용어</th><th>의미</th><th>예</th></tr>
+<tr><td><code>Throwable</code></td><td><code>Error</code>와 <code>Exception</code>의 공통 상위 클래스. <code>throw</code>로 던질 수 있는 모든 것의 조상.</td><td>-</td></tr>
+<tr><td><code>Error</code></td><td>애플리케이션 밖의 문제, 보통 복구 불가능. unchecked.</td><td><code>OutOfMemoryError</code></td></tr>
+<tr><td>checked exception</td><td><code>Exception</code>의 하위 중 <code>RuntimeException</code>이 아닌 것. catch하거나 <code>throws</code>로 선언하지 않으면 컴파일 에러.</td><td><code>IOException</code></td></tr>
+<tr><td>unchecked exception</td><td><code>RuntimeException</code>과 그 하위, 그리고 <code>Error</code>. 컴파일러가 강제하지 않음.</td><td><code>NullPointerException</code></td></tr>
+</table>
+
+<h2>판단 기준</h2>
+<p class="source">
+"If a client can reasonably be expected to recover from an exception, make it a checked exception. If a client cannot do anything to recover from the exception, make it an unchecked exception." — <a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/runtime.html" target="_blank">Oracle Java Tutorials — Unchecked Exceptions</a>
+</p>
+
+<h2>try / catch / finally</h2>
+<pre><code>try {
+    Employee e = service.findByIdOrThrow(id);
+} catch (EmployeeNotFoundException e) {
+    System.out.println("처리: " + e.getMessage());
+} finally {
+    System.out.println("항상 실행됨");
+}</code></pre>
+
+<h2>throw vs throws</h2>
+<table>
+<tr><th></th><th>위치</th><th>의미</th></tr>
+<tr><td><code>throw</code></td><td>method 본문 안</td><td>실제로 예외 객체를 던지는 statement. <code>throw new XxxException("메시지");</code></td></tr>
+<tr><td><code>throws</code></td><td>method 시그니처</td><td>이 method가 checked exception을 던질 수 있다고 컴파일러에게 선언. unchecked는 선언 필요 없음.</td></tr>
+</table>
+<p class="source">
+"All methods use the throw statement to throw an exception." / checked exception이 아니면 "the throws clause" 없이도 된다. — <a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/throwing.html" target="_blank">Oracle Java Tutorials — How to Throw Exceptions</a>
+</p>
+
+<h2>custom exception 만들기</h2>
+<pre><code>// unchecked — RuntimeException 상속
+public class EmployeeNotFoundException extends RuntimeException {
+    public EmployeeNotFoundException(String message) {
+        super(message);
+    }
+}
+
+// checked — Exception 상속
+public class InvalidEmployeeDataException extends Exception {
+    public InvalidEmployeeDataException(String message) {
+        super(message);
+    }
+}
+
+// 사용
+public Employee findByIdOrThrow(Long id) {           // throws 선언 필요 없음 (unchecked)
+    if (!store.containsKey(id)) {
+        throw new EmployeeNotFoundException("id=" + id);
+    }
+    return store.get(id);
+}
+
+public void validateDepartment(String d) throws InvalidEmployeeDataException {  // 필수 (checked)
+    if (d == null || d.isBlank()) {
+        throw new InvalidEmployeeDataException("department is required");
+    }
+}</code></pre>
+
+<h2>Catch or Specify Requirement</h2>
+<p class="source">
+"Code that might throw certain exceptions must be enclosed by either of the following: A try statement that catches the exception. A method that specifies that it can throw the exception." — <a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/catchOrDeclare.html" target="_blank">Oracle Java Tutorials — The catch or Specify Requirement</a>
+</p>
+
+<h2>Spring / Quarkus 연결</h2>
+<table>
+<tr><th></th><th>패턴</th><th>역할</th></tr>
+<tr><td>Spring</td><td><code>@ExceptionHandler(EmployeeNotFoundException.class)</code></td><td>controller/service에서 던진 exception을 잡아서 HTTP 응답(예: 404)으로 변환.</td></tr>
+<tr><td>Quarkus</td><td><code>@ServerExceptionMapper</code></td><td>동일한 역할 — exception을 <code>RestResponse</code>로 매핑.</td></tr>
+</table>
+
+<h2>출처</h2>
+<p>
+<a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/runtime.html" target="_blank">Oracle Java Tutorials — Unchecked Exceptions: The Controversy</a><br>
+<a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/catchOrDeclare.html" target="_blank">Oracle Java Tutorials — The catch or Specify Requirement</a><br>
+<a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/throwing.html" target="_blank">Oracle Java Tutorials — How to Throw Exceptions</a><br>
+<a href="https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html" target="_blank">Spring Framework Reference — @ExceptionHandler</a><br>
+<a href="https://quarkus.io/guides/rest/" target="_blank">Quarkus Guides — Writing REST services (exception mapping)</a>
+</p>
+
+</body>
+</html>

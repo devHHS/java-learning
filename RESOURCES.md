@@ -22,11 +22,16 @@
 - [Oracle Java Platform SE 8 — Map](https://docs.oracle.com/javase/8/docs/api/java/util/Map.html) — key-value, key 중복 불가 근거.
 - [Oracle Java Tutorials — Generic Types](https://docs.oracle.com/javase/tutorial/java/generics/types.html) — generic class/type parameter 정의, generics 없을 때 ClassCastException 근거.
 - [Oracle Java Tutorials — Generic Methods](https://docs.oracle.com/javase/tutorial/java/generics/methods.html) — method 단위 generics 문법(`<T>`가 return type 앞에 옴).
+- [Oracle Java Tutorials — Unchecked Exceptions: The Controversy](https://docs.oracle.com/javase/tutorial/essential/exceptions/runtime.html) — checked/unchecked를 나누는 판단 기준("복구 가능하면 checked, 아니면 unchecked").
+- [Oracle Java Tutorials — The catch or Specify Requirement](https://docs.oracle.com/javase/tutorial/essential/exceptions/catchOrDeclare.html) — checked exception의 정의, catch-or-specify 근거.
+- [Oracle Java Tutorials — How to Throw Exceptions](https://docs.oracle.com/javase/tutorial/essential/exceptions/throwing.html) — `throw` statement 문법, `throws`와의 관계 근거.
 
 ## Spring / Quarkus (문법 큐 이후 본격 사용, 지금은 bridge로만)
 
 - [Spring Data JPA Reference — Core Concepts](https://docs.spring.io/spring-data/jpa/reference/repositories/core-concepts.html) — `Repository<T, ID>`가 domain class와 id 타입을 type argument로 받는다는 근거.
 - [Quarkus Guides — Hibernate ORM with Panache](https://quarkus.io/guides/hibernate-orm-panache) — `PanacheRepository<Entity>` 패턴, generics의 Quarkus 다리로 사용.
+- [Spring Framework Reference — @ExceptionHandler](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html) — controller/service에서 던진 exception을 HTTP 응답으로 매핑하는 근거, exception handling의 Spring 다리.
+- [Quarkus Guides — Writing REST services (exception mapping)](https://quarkus.io/guides/rest/) — `@ServerExceptionMapper` 근거, exception handling의 Quarkus 다리.
 
 ## 아직 필요
 

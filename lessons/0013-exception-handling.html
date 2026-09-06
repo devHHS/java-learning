@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0013 exception handling</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>exception handling — checked vs unchecked</h1>
+<p class="subtitle">레슨 0013 · 문법 기초 큐 10/11 · try/catch, throw/throws, 그리고 컴파일러가 강제하는 것과 안 하는 것</p>
+
+<div class="mission-tie">
+invoice-app에서 존재하지 않는 receipt id를 조회하면 무슨 일이 일어나야 할까? <code>null</code>을 반환하고 넘어가면, 그 <code>null</code>을 쓰는 코드 어딘가에서 언젠가 <code>NullPointerException</code>이 터진다 — 그것도 원인과 먼 곳에서. 오늘은 "문제가 생겼다"는 걸 명시적으로 알리는 방법(exception)과, Java가 그중 일부를 <strong>컴파일 타임에 강제로 처리시키는</strong> 이유를 배운다.
+</div>
+
+<h2>1. 문제 상황 — 처리 안 된 예외</h2>
+<pre><code>int[] numbers = {1, 2, 3};
+System.out.println(numbers[5]);   // index 5는 없다</code></pre>
+<p>실행하면:</p>
+<pre><code>Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException:
+    Index 5 out of bounds for length 3
+    at Runner.main(Runner.java:3)</code></pre>
+<p>
+예외가 발생한 지점에서 아무도 잡지 않으면, 그 예외는 호출한 곳으로, 또 그걸 호출한 곳으로 계속 전파(propagate)되다가 결국 <code>main</code>까지 도달해서 프로그램이 그 자리에서 죽는다. 이 stack trace 자체가 "어디서 뭐가 잘못됐는지"를 알려주는 정보다 — 지우지 말고 읽는 습관이 먼저다.
+</p>
+
+<h2>2. try / catch / finally</h2>
+<pre><code>try {
+    System.out.println(numbers[5]);
+} catch (ArrayIndexOutOfBoundsException e) {
+    System.out.println("index 범위 초과: " + e.getMessage());
+} finally {
+    System.out.println("이 줄은 예외 발생 여부와 상관없이 항상 실행된다");
+}</code></pre>
+<p>
+<code>try</code> block 안에서 예외가 발생하면, 그 즉시 <code>try</code> block의 나머지는 건너뛰고 맞는 <code>catch</code> block으로 점프한다. <code>finally</code>는 예외가 나든 안 나든, <code>catch</code>에서 처리되든 안 되든 항상 실행된다 (자원 정리 등에 쓰인다).
+</p>
+
+<h2>3. checked vs unchecked — 오늘의 핵심</h2>
+<p>
+모든 예외는 <code>Throwable</code>의 하위 클래스다. 그중 <code>RuntimeException</code>(그리고 그 하위)과 <code>Error</code>(그리고 그 하위)를 뺀 나머지를 <strong>checked exception</strong>이라 부른다.
+</p>
+<p class="source">
+"Checked exceptions are subject to the Catch or Specify Requirement. All exceptions are checked exceptions, except for those indicated by Error, RuntimeException, and their subclasses." — <a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/catchOrDeclare.html" target="_blank">Oracle Java Tutorials — The catch or Specify Requirement</a>
+</p>
+<p>
+"Catch or Specify"란: checked exception이 발생할 수 있는 코드는 반드시 <strong>① <code>try</code>로 잡거나, ② method 시그니처에 <code>throws</code>로 명시</strong>해야 한다 — 안 하면 컴파일이 안 된다. <code>RuntimeException</code>(unchecked)은 이 요구사항에서 제외된다 — 컴파일러가 강제하지 않는다.
+</p>
+<p>
+왜 이렇게 나눴을까?
+</p>
+<p class="source">
+"If a client can reasonably be expected to recover from an exception, make it a checked exception. If a client cannot do anything to recover from the exception, make it an unchecked exception." — <a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/runtime.html" target="_blank">Oracle Java Tutorials — Unchecked Exceptions: The Controversy</a>
+</p>
+<p>
+예: 파일을 여는 코드는 그 파일이 없을 수도 있다는 걸 <strong>충분히 예상 가능</strong>하고, 호출한 쪽이 "다른 경로 시도" 같은 복구를 할 수 있다 — 그래서 <code>IOException</code>은 checked. 반면 <code>null</code>에 method를 호출한 것(<code>NullPointerException</code>)은 프로그래밍 실수지, 호출한 쪽이 복구할 방법이 없다 — 그래서 unchecked.
+</p>
+
+<h2>4. throw로 던지기, throws로 선언하기, custom exception 만들기</h2>
+<pre><code>// unchecked — RuntimeException을 상속
+public class EmployeeNotFoundException extends RuntimeException {
+    public EmployeeNotFoundException(String message) {
+        super(message);
+    }
+}
+
+public Employee findByIdOrThrow(Long id) {
+    if (!store.containsKey(id)) {
+        throw new EmployeeNotFoundException("id=" + id);   // throw — 실제로 던짐
+    }
+    return store.get(id);
+}   // throws 선언 없음 — unchecked라 컴파일러가 요구 안 함</code></pre>
+<p class="source">
+"All methods use the throw statement to throw an exception. The throw statement requires a single argument: a throwable object." — <a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/throwing.html" target="_blank">Oracle Java Tutorials — How to Throw Exceptions</a>
+</p>
+<p>
+checked exception을 만들 땐 <code>Exception</code>을 상속한다. 이 경우 method 시그니처에 <code>throws</code>가 <strong>필수</strong>다:
+</p>
+<pre><code>// checked — Exception을 상속
+public class InvalidEmployeeDataException extends Exception {
+    public InvalidEmployeeDataException(String message) {
+        super(message);
+    }
+}
+
+public void validateDepartment(String department) throws InvalidEmployeeDataException {
+    if (department == null || department.isBlank()) {
+        throw new InvalidEmployeeDataException("department is required");
+    }
+}</code></pre>
+<p>
+<code>throw</code>(동사, 단수)는 실제로 던지는 statement, <code>throws</code>(method 시그니처에 붙는 키워드)는 "이 method가 checked exception을 던질 수 있다"는 선언이다. 둘은 다른 자리에, 다른 목적으로 쓰인다.
+</p>
+
+<div class="bridge">
+Spring에서는 <code>@ExceptionHandler(EmployeeNotFoundException.class)</code>를 붙인 method가 controller/service에서 던진 exception을 잡아 HTTP 응답(예: 404)으로 바꿔준다. Quarkus에서는 <code>@ServerExceptionMapper</code>가 똑같은 역할을 한다 — exception을 <code>RestResponse</code>로 매핑. 오늘 만든 custom exception이 나중에 이 자리에 그대로 들어간다.
+</div>
+
+<h2>5. invoice-app에 바로 적용</h2>
+<p>
+receipt를 id로 조회하는 repository method가 못 찾았을 때 <code>null</code>을 반환하는 대신 <code>ReceiptNotFoundException</code>(unchecked) 같은 custom exception을 던지면, 나중에 Spring이 그 exception 하나로 "404 Not Found" 응답까지 자동으로 이어줄 수 있다.
+</p>
+<p class="source">
+"@Controller and @ControllerAdvice classes can have @ExceptionHandler methods to handle exceptions from controller methods." — <a href="https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html" target="_blank">Spring Framework Reference — @ExceptionHandler</a>
+</p>
+
+<h2>Hands-on: EmployeeService — checked와 unchecked를 나란히</h2>
+<p>
+<code>practice/0013-exception-handling/p0013/</code>에 시작 코드 없이 전부 직접 작성한다. 0012의 <code>Employee</code>/repository와 비슷한 모양이지만, 오늘은 "못 찾으면 null" 대신 "못 찾으면 예외"로 바꿔본다.
+</p>
+
+<p><strong>1) <code>Employee.java</code></strong> — field: <code>id</code>(<code>Long</code>), <code>name</code>(<code>String</code>), <code>department</code>(<code>String</code>). constructor, getter 세 개. (새로 배울 것 없음.)</p>
+
+<p><strong>2) <code>EmployeeNotFoundException.java</code></strong> — <code>RuntimeException</code>을 상속(unchecked). <code>String message</code>를 받는 constructor 하나, <code>super(message)</code> 호출.</p>
+
+<p><strong>3) <code>InvalidEmployeeDataException.java</code></strong> — <code>Exception</code>을 상속(checked). 마찬가지로 <code>String message</code> constructor, <code>super(message)</code>.</p>
+
+<p><strong>4) <code>EmployeeService.java</code></strong> — field: <code>Map&lt;Long, Employee&gt; store</code> (constructor에서 <code>new HashMap&lt;&gt;()</code>로 초기화). method 세 개:</p>
+<ul>
+<li><code>Employee save(Employee e)</code> — <code>e.getId()</code>를 key로 저장하고 <code>e</code> 반환.</li>
+<li><code>Employee findByIdOrThrow(Long id)</code> — 있으면 반환, 없으면 <code>EmployeeNotFoundException</code>을 <code>throw</code>. (unchecked라 시그니처에 <code>throws</code> 필요 없음.)</li>
+<li><code>void validateDepartment(String department) throws InvalidEmployeeDataException</code> — <code>department</code>가 <code>null</code>이거나 blank면 <code>InvalidEmployeeDataException</code>을 <code>throw</code>.</li>
+</ul>
+
+<p><strong>5) <code>Runner.java</code></strong> — 순서대로, 각 단계 결과를 직접 눈으로 확인하면서 진행:</p>
+<ol>
+<li><code>EmployeeService</code> 생성, <code>Employee</code> 하나 저장.</li>
+<li>존재하는 id로 <code>findByIdOrThrow</code> 호출 → 이름 출력. (try/catch 없이도 컴파일된다 — 왜 그런지 이미 알고 있을 것.)</li>
+<li><strong>존재하지 않는 id</strong>로 <code>findByIdOrThrow</code>를 <code>try/catch 없이</code> 한 번 호출해보고 실행 — stack trace를 직접 읽어본다. 그다음 <code>try/catch</code>로 감싸서 <code>catch</code> block에서 <code>e.getMessage()</code>를 출력하도록 고친다.</li>
+<li><code>validateDepartment(null)</code>을 <code>try/catch 없이</code> 그냥 호출하는 코드를 써본다 — <strong>컴파일 에러</strong>가 날 것이다. 에러 메시지를 읽고, <code>try/catch</code>로 감싸서 <code>catch</code> block에서 메시지를 출력하도록 고친다.</li>
+</ol>
+
+<div class="callout">
+<strong>스스로 체크리스트</strong>:
+<ul>
+<li><code>EmployeeNotFoundException</code>은 <code>RuntimeException</code>을, <code>InvalidEmployeeDataException</code>은 <code>Exception</code>을 상속했는가? (이 한 글자 차이가 checked/unchecked를 가른다.)</li>
+<li><code>findByIdOrThrow</code>엔 <code>throws</code>가 없고, <code>validateDepartment</code>엔 <code>throws</code>가 있는 이유를 설명할 수 있는가?</li>
+<li>3번과 4번에서 각각 무슨 에러(런타임 예외 vs 컴파일 에러)를 봤는지, 왜 다른지 구분할 수 있는가?</li>
+</ul>
+</div>
+
+<h2>퀴즈</h2>
+
+<div class="quiz" data-answer="specify">
+<p class="quiz-q">Q1. checked exception이 지켜야 하는 요구사항의 이름은 "catch or ___"다. (영어 한 단어, 빈칸)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="unchecked">
+<p class="quiz-q">Q2. 호출한 쪽이 복구할 방법이 없는 프로그래밍 실수라면 ___ exception으로 만든다. (영어 한 단어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="throws">
+<p class="quiz-q">Q3. checked exception을 던질 수 있는 method는 시그니처에 무엇을 선언해야 하는가? (영어, 키워드 하나)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="throw">
+<p class="quiz-q">Q4. method 본문 안에서 실제로 예외 객체를 던질 때 쓰는 statement는? (영어, 키워드 하나)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="ask-agent">
+막히면 바로 물어보자. <code>finally</code>와 Java 7 이후의 try-with-resources(자원을 자동으로 닫아주는 문법), 혹은 여러 개의 <code>catch</code> block을 나열하는 multi-catch는 오늘 범위 밖이지만 궁금하면 짧게 설명해줄 수 있다.
+</div>
+
+<div class="nav-links">
+이전: <a href="0010-generics.html">generics</a> · <a href="0011-review-generics.html">복습</a> · <a href="0012-review-generics-repository.html">복습</a><br>
+다음: lambda와 stream — 큐 11/11 (문법 기초 큐 마지막 항목)<br>
+참고 문서: <a href="../reference/java-exception-handling-cheatsheet.html">Exception Handling Cheatsheet</a>
+</div>
+
+</body>
+</html>
