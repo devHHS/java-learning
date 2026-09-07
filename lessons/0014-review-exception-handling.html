@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0014 review: exception handling</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>복습: exception handling</h1>
+<p class="subtitle">레슨 0014 · 복습 세션 (큐 진행 아님, 0013 재확인) · 큐는 여전히 9/11, exception handling은 아직 체크 전</p>
+
+<div class="mission-tie">
+0013에서 checked/unchecked 개념은 결국 정확하게 정리했지만, <code>try</code>/<code>catch</code> 코드를 쓸 땐 <strong>예외가 나는 호출을 <code>catch</code> 안에 넣는 실수</strong>를 반복했다 — "실패하면 대안으로 다른 걸 한다"는 일반 조건 분기랑 헷갈린 것. 오늘은 새 개념 없이, ① 하루 지난 뒤 개념이 남아있는지 quick recall, ② <code>try</code>/<code>catch</code> 실행 흐름을 코드 없이 예측해보기, ③ 다른 도메인(Order/Payment)으로 hands-on을 처음부터 다시. 이번엔 힌트 없이 스스로 구조를 맞추는지가 관건이다.
+</div>
+
+<h2>Part 1 — Quick recall (하루 지난 뒤 기억 확인)</h2>
+
+<div class="quiz" data-answer="specify">
+<p class="quiz-q">Q1. checked exception이 지켜야 하는 요구사항의 이름은 "catch or ___"다. (영어 한 단어, 빈칸)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="RuntimeException">
+<p class="quiz-q">Q2. 어떤 클래스를 상속해야 그 exception이 unchecked가 되는가? (영어, 클래스 이름)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="throws">
+<p class="quiz-q">Q3. checked exception을 던질 수 있는 method의 시그니처에 붙는 키워드는? (s로 끝남)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<h2>Part 2 — try/catch 실행 흐름, 코드 없이 예측하기</h2>
+<p>
+아래 두 코드를 실행하지 말고, <strong>눈으로만 읽고</strong> 뭐가 출력될지 채팅에 먼저 답한다. 그다음에 실제로 돌려서 맞았는지 확인한다.
+</p>
+
+<pre><code>// 스니펫 A
+try {
+    System.out.println(riskyLookup(99L));   // 이 id는 존재하지 않음 → 예외를 던짐
+} catch (NotFoundException e) {
+    System.out.println("잡음: " + e.getMessage());
+}
+System.out.println("끝");</code></pre>
+
+<pre><code>// 스니펫 B
+try {
+    System.out.println("safe call");        // 이 줄은 예외를 던지지 않음
+} catch (NotFoundException e) {
+    System.out.println(riskyLookup(99L));   // 예외를 던지는 호출이 catch 안에 있음
+}
+System.out.println("끝");</code></pre>
+
+<p>
+두 스니펫 각각 몇 줄이, 어떤 내용으로 출력될지 예측해서 채팅에 적어줘. B는 일부러 0013에서 나왔던 실수와 같은 모양으로 만들어뒀다.
+</p>
+
+<h2>Part 3 — Hands-on: OrderService, 처음부터 다시</h2>
+<p>
+<code>practice/0014-review-exception-handling/p0014/</code>에 시작 코드 없이 작성한다. 0013의 <code>Employee</code>/<code>EmployeeService</code>와 구조는 완전히 같지만, 오늘은 결제(payment) 도메인으로 바꾼다.
+</p>
+
+<p><strong>1) <code>Order.java</code></strong> — field: <code>id</code>(<code>Long</code>), <code>customerName</code>(<code>String</code>), <code>amount</code>(<code>double</code>, 주문 금액). constructor, getter 세 개.</p>
+
+<p><strong>2) <code>OrderNotFoundException.java</code></strong> — unchecked (<code>RuntimeException</code> 상속). <code>String message</code> constructor.</p>
+
+<p><strong>3) <code>InsufficientBalanceException.java</code></strong> — checked (<code>Exception</code> 상속). <code>String message</code> constructor.</p>
+
+<p><strong>4) <code>OrderService.java</code></strong> — field: <code>Map&lt;Long, Order&gt; store</code>. method 세 개:</p>
+<ul>
+<li><code>Order save(Order order)</code> — 저장하고 저장한 <code>order</code> 반환.</li>
+<li><code>Order findByIdOrThrow(Long id)</code> — 없으면 <code>OrderNotFoundException</code>을 <code>throw</code>. (<code>throws</code> 선언 필요 없음 — 왜인지 이젠 설명할 수 있을 것.)</li>
+<li><code>void processPayment(Long orderId, double paymentAmount) throws InsufficientBalanceException</code> — <code>findByIdOrThrow</code>로 주문을 찾은 뒤, <code>paymentAmount</code>가 주문의 <code>amount</code>보다 작으면 <code>InsufficientBalanceException</code>을 <code>throw</code>.</li>
+</ul>
+
+<p><strong>5) <code>Runner.java</code></strong> — 순서대로:</p>
+<ol>
+<li><code>OrderService</code> 생성, <code>Order</code> 하나 저장 (예: id=1L, amount=50000).</li>
+<li>존재하는 id로 <code>findByIdOrThrow</code> 호출 → <code>amount</code> 출력. (<code>try/catch</code> 없이.)</li>
+<li>존재하지 않는 id(예: <code>99L</code>)로 <code>findByIdOrThrow</code>를 <code>try/catch</code>로 감싸서 호출 → <code>catch</code>에서 메시지 출력. <strong>이번엔 힌트 없이 처음부터 올바른 구조로 써본다</strong> (예외 나는 호출은 <code>try</code> 안에).</li>
+<li><code>processPayment(1L, 10000)</code>(주문 금액보다 적은 결제)을 <code>try/catch</code>로 감싸서 호출 → <code>catch</code>에서 메시지 출력.</li>
+</ol>
+
+<div class="callout">
+<strong>스스로 체크리스트</strong>:
+<ul>
+<li>3번, 4번에서 예외가 날 수 있는 호출이 <code>catch</code>가 아니라 <code>try</code> 안에 있는가?</li>
+<li><code>findByIdOrThrow</code>엔 <code>throws</code>가 없고 <code>processPayment</code>엔 있는 이유를 코드를 안 보고 말할 수 있는가?</li>
+<li>IDE가 자동으로 채워준 <code>catch</code> block 내용(있다면)이 실제로 원하는 동작(메시지 출력)인지 확인했는가?</li>
+</ul>
+</div>
+
+<div class="ask-agent">
+막히면 바로 물어보되, 이번엔 먼저 Part 2의 스니펫 A/B와 비교해서 "내 코드가 A 모양인가 B 모양인가"부터 스스로 점검해보고 물어보자.
+</div>
+
+<div class="nav-links">
+이전 (원 레슨): <a href="0013-exception-handling.html">0013 exception handling</a><br>
+다음: 학습자 판단에 따라 — 단단해지면 lambda와 stream(큐 11/11), 아니면 복습 한 번 더<br>
+참고 문서: <a href="../reference/java-exception-handling-cheatsheet.html">Exception Handling Cheatsheet</a>
+</div>
+
+</body>
+</html>
