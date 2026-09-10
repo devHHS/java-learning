@@ -13,8 +13,3 @@ target/
 *.iws
 *.iml
 *.ipr
-
-#
-MISSION.md
-NOTES.md
-learning-records/
