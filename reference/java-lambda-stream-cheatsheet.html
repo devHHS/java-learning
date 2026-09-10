@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Reference: Lambda &amp; Stream Cheatsheet</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Lambda &amp; Stream Cheatsheet</h1>
+<p class="subtitle">레슨 <a href="../lessons/0015-lambda-stream.html">0015</a>에서 압축</p>
+
+<h2>Lambda 문법</h2>
+<pre><code>(파라미터) -&gt; 표현식
+p -&gt; p.getPrice()            // 파라미터 1개면 괄호 생략 가능
+(a, b) -&gt; a + b               // 파라미터 여러 개면 괄호 필수
+p -&gt; { return p.getPrice(); } // body가 statement block이면 중괄호 + return</code></pre>
+<p>lambda가 인자로 들어갈 수 있는 이유: 받는 타입이 <strong>functional interface</strong>(abstract method가 정확히 1개인 interface)이기 때문.</p>
+
+<h2>Stream pipeline 구조</h2>
+<pre><code>list.stream()        // source
+    .filter(...)      // intermediate — Stream 반환, 체인 가능
+    .map(...)          // intermediate
+    .collect(...);      // terminal — Stream 아닌 최종 결과, 체인 끝</code></pre>
+
+<h2>주요 operation</h2>
+<table>
+<tr><th>operation</th><th>종류</th><th>받는 functional interface</th><th>하는 일</th></tr>
+<tr><td><code>filter</code></td><td>intermediate</td><td><code>Predicate&lt;T&gt;</code></td><td>조건에 맞는 것만 남김</td></tr>
+<tr><td><code>map</code></td><td>intermediate</td><td><code>Function&lt;T,R&gt;</code></td><td>각 요소를 변환</td></tr>
+<tr><td><code>sorted</code></td><td>intermediate</td><td><code>Comparator&lt;T&gt;</code></td><td>정렬</td></tr>
+<tr><td><code>forEach</code></td><td>terminal</td><td><code>Consumer&lt;T&gt;</code></td><td>각 요소에 부수효과</td></tr>
+<tr><td><code>collect</code></td><td>terminal</td><td><code>Collector</code></td><td>List/Set/Map으로 모음</td></tr>
+<tr><td><code>reduce</code></td><td>terminal</td><td><code>BinaryOperator&lt;T&gt;</code></td><td>전체를 하나의 값으로 누적</td></tr>
+</table>
+
+<h2>패턴 모음</h2>
+<pre><code>// 필터 + 매핑 + 모으기
+List&lt;String&gt; names = employees.stream()
+    .filter(e -&gt; e.isActive())
+    .map(Employee::getName)
+    .collect(Collectors.toList());
+
+// 정렬 (내림차순)
+List&lt;Employee&gt; sorted = employees.stream()
+    .sorted(Comparator.comparingDouble(Employee::getSalary).reversed())
+    .collect(Collectors.toList());
+
+// 합계 — 실무에서 흔한 방식
+double total = employees.stream()
+    .mapToDouble(Employee::getSalary)
+    .sum();
+
+// 합계 — reduce로 직접
+double total2 = employees.stream()
+    .map(Employee::getSalary)
+    .reduce(0.0, (acc, s) -&gt; acc + s);
+
+// 중복 제거 (0009 collections와 연결)
+Set&lt;String&gt; departments = employees.stream()
+    .map(Employee::getDepartment)
+    .collect(Collectors.toSet());</code></pre>
+
+<h2>Method reference</h2>
+<p><code>Employee::getName</code>은 <code>e -&gt; e.getName()</code>의 축약형. 의미는 완전히 동일하다.</p>
+
+<h2>0008/0009와의 연결</h2>
+<p>
+functional interface(<code>Predicate</code>, <code>Function</code>, <code>Comparator</code> 등)도 결국 0008에서 배운 interface다 — abstract method가 하나뿐이라 lambda로 구현체를 한 줄에 쓸 수 있는 것뿐이다. <code>.collect(Collectors.toSet())</code>은 0009에서 배운 <code>Set</code>(중복 없음)을 stream 결과로 만드는 방법이다.
+</p>
+
+<h2>출처</h2>
+<p>
+<a href="https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html" target="_blank">Oracle Java Tutorials — Lambda Expressions</a><br>
+<a href="https://docs.oracle.com/javase/tutorial/collections/streams/index.html" target="_blank">Oracle Java Tutorials — Aggregate Operations</a><br>
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html" target="_blank">Oracle Java Platform SE 8 — Stream</a>
+</p>
+
+</body>
+</html>

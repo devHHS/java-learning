@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>0015 lambda와 stream</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+
+<h1>lambda와 stream</h1>
+<p class="subtitle">레슨 0015 · 문법 기초 큐 11/11 (마지막 항목) · 0009에서 이미 실전으로 써본 것을 formalize</p>
+
+<div class="mission-tie">
+0009(collections) hands-on에서 아무도 시키지 않았는데 <code>.stream().map().collect(Collectors.toSet())</code>를 스스로 썼고, 각 단계를 정확히 설명했다. 그래서 오늘은 <strong>새로 배우는 레슨이 아니라 정리하는 레슨</strong>이다. 이미 쓸 줄 아는 <code>map</code>/<code>collect</code>는 "왜 이런 문법인지"(functional interface)만 짚고, 아직 안 써본 <code>filter</code>/<code>sorted</code>/<code>reduce</code>로 빈틈을 채운다. 이걸로 문법 기초 큐가 끝난다.
+</div>
+
+<h2>1. 이미 쓴 것 — 왜 그 문법이 동작하는가</h2>
+<p>0009에서 썼던 코드를 다시 보자.</p>
+<pre><code>Set&lt;String&gt; categories = products.stream()
+    .map(p -&gt; p.getCategory())
+    .collect(Collectors.toSet());</code></pre>
+<p>
+<code>p -&gt; p.getCategory()</code>가 <strong>lambda expression</strong>이다. Oracle 문서의 정의:
+</p>
+<p class="source">
+"A lambda expression consists of... a comma-separated list of formal parameters enclosed in parentheses... the arrow token, <code>-&gt;</code>... a body, which consists of a single expression or a statement block." — <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html" target="_blank">Oracle Java Tutorials — Lambda Expressions</a>
+</p>
+<p>
+파라미터가 하나면 괄호도 생략 가능해서 <code>p -&gt; p.getCategory()</code>처럼 쓴다. 이 lambda가 <code>map()</code>의 인자로 들어갈 수 있는 이유는, <code>map</code>이 받는 타입이 <strong>functional interface</strong>이기 때문이다.
+</p>
+<p class="source">
+"A functional interface is any interface that contains only one abstract method." — <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html" target="_blank">Oracle Java Tutorials — Lambda Expressions</a>
+</p>
+<p>
+0008에서 배운 interface 개념이 여기서 그대로 이어진다 — <code>map(Function&lt;T, R&gt; mapper)</code>의 <code>Function</code>은 abstract method가 <code>apply()</code> 하나뿐인 interface다. lambda <code>p -&gt; p.getCategory()</code>는 사실 <code>apply(p)</code>를 구현한 익명의 구현체를 한 줄로 쓴 것이다. "interface는 계약, 구현은 class(또는 lambda)"라는 0008의 원칙이 여기서도 동일하다.
+</p>
+
+<h2>2. Stream pipeline — 세 부분</h2>
+<p class="source">
+"A pipeline contains the following components: A source... Zero or more intermediate operations... A terminal operation." — <a href="https://docs.oracle.com/javase/tutorial/collections/streams/index.html" target="_blank">Oracle Java Tutorials — Aggregate Operations</a>
+</p>
+<pre><code>products.stream()          // source
+    .map(p -&gt; p.getCategory())   // intermediate — 새 stream을 반환
+    .collect(Collectors.toSet());  // terminal — stream이 아닌 결과를 반환</code></pre>
+<p>
+핵심 구분: <strong>intermediate operation은 stream을 반환</strong>하므로 계속 이어붙일(chain) 수 있고, <strong>terminal operation은 stream이 아닌 최종 결과</strong>(Set, List, 숫자 등)를 반환하며 여기서 파이프라인이 끝난다. <code>collect</code>가 terminal이라 그 뒤에 <code>.map()</code>을 또 이어붙일 수 없는 이유가 이것이다.
+</p>
+
+<h2>3. 오늘 새로 채우는 것 — filter, sorted, reduce</h2>
+
+<h3>filter — 조건에 맞는 것만 남김</h3>
+<pre><code>List&lt;Product&gt; expensive = products.stream()
+    .filter(p -&gt; p.getPrice() &gt; 10000)   // Predicate&lt;T&gt; — true/false 반환
+    .collect(Collectors.toList());</code></pre>
+<p class="source">
+"Returns a stream consisting of the elements of this stream that match the given predicate." — <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html" target="_blank">Oracle Java Platform SE 8 — Stream</a>
+</p>
+
+<h3>sorted — 정렬</h3>
+<pre><code>List&lt;Product&gt; byPriceDesc = products.stream()
+    .sorted(Comparator.comparingDouble(Product::getPrice).reversed())
+    .collect(Collectors.toList());</code></pre>
+<p>
+<code>Product::getPrice</code>는 <strong>method reference</strong> — <code>p -&gt; p.getPrice()</code>를 더 짧게 쓴 것뿐, 의미는 동일하다.
+</p>
+
+<h3>reduce — 여러 값을 하나로 합침</h3>
+<pre><code>double total = products.stream()
+    .mapToDouble(Product::getPrice)   // Stream&lt;Product&gt; → DoubleStream
+    .sum();
+
+// reduce로 직접 쓰면:
+double total2 = products.stream()
+    .map(Product::getPrice)
+    .reduce(0.0, (acc, price) -&gt; acc + price);   // identity=0.0, accumulator</code></pre>
+<p class="source">
+"Performs a reduction on the elements of this stream, using an associative accumulation function..." — <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html" target="_blank">Oracle Java Platform SE 8 — Stream</a>
+</p>
+<p>
+실무에서는 합계처럼 단순한 경우 <code>mapToDouble().sum()</code>을 더 자주 쓰고, <code>reduce</code>는 "각 단계에서 누적값(accumulator)을 직접 다뤄야 하는" 좀 더 일반적인 경우에 쓴다. 오늘 hands-on에서는 둘 다 연습한다.
+</p>
+
+<h2>4. 한눈에 정리</h2>
+<table>
+<tr><th>operation</th><th>종류</th><th>하는 일</th></tr>
+<tr><td><code>filter</code></td><td>intermediate</td><td>조건(Predicate)에 맞는 것만 남김</td></tr>
+<tr><td><code>map</code></td><td>intermediate</td><td>각 요소를 변환(Function)</td></tr>
+<tr><td><code>sorted</code></td><td>intermediate</td><td>정렬(Comparator)</td></tr>
+<tr><td><code>collect</code></td><td>terminal</td><td>List/Set/Map 등으로 모음</td></tr>
+<tr><td><code>reduce</code></td><td>terminal</td><td>전체를 하나의 값으로 누적</td></tr>
+<tr><td><code>forEach</code></td><td>terminal</td><td>각 요소에 부수효과(출력 등)</td></tr>
+</table>
+
+<div class="bridge">
+Quarkus/Spring 양쪽 다 service layer에서 이 패턴이 그대로 나온다 — <code>repository.findAll().stream().filter(...).map(...).collect(Collectors.toList())</code>는 controller에 List를 그대로 넘기지 않고 조건에 맞는 것만, 원하는 형태(DTO)로 가공해서 넘길 때 쓰는 표준 패턴이다.
+</div>
+
+<h2>5. invoice-app에 바로 적용</h2>
+<p>
+이번 달 영수증 중 금액이 5만원 이상인 것만 골라 날짜순 정렬한 뒤, 담당자에게 보여줄 요약 문자열 List로 바꾸는 코드가 정확히 오늘 배운 세 가지(filter → sorted → map)의 조합이다. 총 지출액 계산은 <code>mapToDouble(Receipt::getAmount).sum()</code>이 된다.
+</p>
+
+<h2>Hands-on: EmployeeAnalytics</h2>
+<p>
+<code>practice/0015-lambda-stream/p0015/</code>에 <code>Employee.java</code>는 완성돼 있다 (<code>id</code>, <code>name</code>, <code>department</code>, <code>salary</code>, <code>active</code>).
+</p>
+<ul>
+<li><code>EmployeeAnalytics.java</code>의 TODO 세 곳 (모두 <code>List&lt;Employee&gt;</code>를 받는 method):
+  <ul>
+    <li><code>List&lt;String&gt; activeEmployeeNames(List&lt;Employee&gt; employees)</code> — <code>active == true</code>인 사람만 골라(<code>filter</code>) 이름만(<code>map</code>) <code>List&lt;String&gt;</code>으로 모음(<code>collect</code>).</li>
+    <li><code>List&lt;Employee&gt; sortedBySalaryDesc(List&lt;Employee&gt; employees)</code> — <code>salary</code> 내림차순으로 정렬(<code>sorted</code> + <code>Comparator</code>)한 <code>List</code> 반환.</li>
+    <li><code>double totalPayroll(List&lt;Employee&gt; employees)</code> — <code>active == true</code>인 사람들의 <code>salary</code> 합계. <code>reduce</code>로 한 번, <code>mapToDouble().sum()</code>으로 한 번 — 두 가지 버전을 각각 다른 method 이름(예: <code>totalPayrollReduce</code>, <code>totalPayrollSum</code>)으로 둘 다 작성.</li>
+  </ul>
+</li>
+<li><code>Runner.java</code>는 전부 직접 작성한다. <code>Employee</code> 4~5명(활동 상태 섞어서) 만들어 <code>List</code>에 담고, 세 method를 호출해 결과를 출력.</li>
+</ul>
+
+<div class="callout">
+<strong>스스로 체크리스트</strong>:
+<ul>
+<li><code>filter</code> 안의 lambda는 <code>true</code>/<code>false</code>를 반환하는가? (Predicate)</li>
+<li><code>map</code> 안의 lambda는 하나의 값을 다른 값으로 바꿔 반환하는가? (Function)</li>
+<li><code>collect</code>가 이 체인의 <strong>마지막</strong>에 오는가 — 그 뒤에 또 stream operation을 이어붙이지 않았는가?</li>
+</ul>
+</div>
+
+<h2>퀴즈</h2>
+
+<div class="quiz" data-answer="abstract">
+<p class="quiz-q">Q1. functional interface는 method가 몇 개 있어야 하는가 — "단 하나의 ___ method". (영어 한 단어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="stream">
+<p class="quiz-q">Q2. intermediate operation(예: filter, map)이 반환하는 것은? (영어 한 단어)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="quiz" data-answer="Predicate">
+<p class="quiz-q">Q3. filter가 받는 lambda의 타입(functional interface 이름)은? (영어, 대문자로 시작)</p>
+<input type="text" class="quiz-input" placeholder="답 입력">
+<button onclick="checkQuiz(this)">확인</button>
+<div class="quiz-feedback"></div>
+</div>
+
+<div class="ask-agent">
+<code>Comparator.comparingDouble(...).reversed()</code>나 <code>Product::getPrice</code> 같은 method reference 문법이 헷갈리면 바로 물어봐도 된다. 그리고 이게 문법 기초 큐의 마지막 항목이다 — 끝나면 다음 세션 방향(복습 한 번 더 vs Spring 개념으로 전환)을 같이 정하자.
+</div>
+
+<div class="nav-links">
+이전: <a href="0014-review-exception-handling.html">복습: exception handling</a><br>
+다음: 문법 기초 큐 완료 — 학습자 판단에 따라 복습 또는 Spring 전환<br>
+참고 문서: <a href="../reference/java-lambda-stream-cheatsheet.html">Lambda &amp; Stream Cheatsheet</a>
+</div>
+
+</body>
+</html>

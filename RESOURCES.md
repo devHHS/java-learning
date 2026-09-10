@@ -25,6 +25,9 @@
 - [Oracle Java Tutorials — Unchecked Exceptions: The Controversy](https://docs.oracle.com/javase/tutorial/essential/exceptions/runtime.html) — checked/unchecked를 나누는 판단 기준("복구 가능하면 checked, 아니면 unchecked").
 - [Oracle Java Tutorials — The catch or Specify Requirement](https://docs.oracle.com/javase/tutorial/essential/exceptions/catchOrDeclare.html) — checked exception의 정의, catch-or-specify 근거.
 - [Oracle Java Tutorials — How to Throw Exceptions](https://docs.oracle.com/javase/tutorial/essential/exceptions/throwing.html) — `throw` statement 문법, `throws`와의 관계 근거.
+- [Oracle Java Tutorials — Lambda Expressions](https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html) — lambda 문법(`(params) -> body`) 정의, functional interface("단 하나의 abstract method를 가진 interface") 정의 근거.
+- [Oracle Java Tutorials — Aggregate Operations](https://docs.oracle.com/javase/tutorial/collections/streams/index.html) — stream pipeline(source → intermediate operation → terminal operation) 정의 근거.
+- [Oracle Java Platform SE 8 — Stream](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html) — `filter`/`map`/`sorted`/`reduce`/`collect` 각 method의 공식 시그니처와 설명.
 
 ## Spring / Quarkus (문법 큐 이후 본격 사용, 지금은 bridge로만)
 
