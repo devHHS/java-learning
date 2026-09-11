@@ -35,4 +35,9 @@ public class Employee {
     public boolean isActive() {
         return active;
     }
+
+    @Override
+    public String toString() {
+        return name + "(" + salary + ")";
+    }
 }
